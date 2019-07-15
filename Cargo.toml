@@ -1,0 +1,8 @@
+[package]
+name = "hamster_wheel"
+version = "0.1.0"
+authors = ["OsamaElHariri <ose05@mail.aub.edu>"]
+edition = "2018"
+
+[dependencies]
+logos = "0.10.0-rc2"
