@@ -1,40 +1,50 @@
-use crate::tokenizer::tokenizer;
+use crate::parser::scope::Scope;
+use crate::tokenizer::tokenizer::InfoToken;
 use crate::tokenizer::tokenizer::Token;
+use crate::tokenizer::tokenizer::Tokenizer;
 use crate::tree_nodes::tree_nodes::ArraySliceExpr;
 use crate::tree_nodes::tree_nodes::ArraySliceIndexExpr;
+use crate::tree_nodes::tree_nodes::AsStatementExpr;
 use crate::tree_nodes::tree_nodes::Expr;
-use logos::Logos;
 use std::error::Error;
 
 pub struct Parser<'a> {
     pub text: &'a str,
-    pub lexer: logos::Lexer<Token, &'a str>,
+    pub lexer: Tokenizer<'a>,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(text: &'a str) -> Parser {
         Parser {
             text,
-            lexer: tokenizer::tokenize(text),
+            lexer: Tokenizer::new(text),
         }
     }
 
     pub fn parse(&mut self) -> Expr {
+        // let a = Scope::new();
         self.array_slice()
+    }
+
+    fn as_statement(&mut self, scope: &Scope) -> Expr {
+        Expr::AsStatement(AsStatementExpr {
+            r#as: self.consume(Token::As),
+            variable: self.consume(Token::Variable),
+        })
     }
 
     fn array_slice(&mut self) -> Expr {
         Expr::ArraySlice(Box::new(ArraySliceExpr {
-            leftParen: self.consume(Token::LeftBracket),
+            left_paren: self.consume(Token::LeftBracket),
             start_index: self.array_slice_index(),
             comma: self.consume(Token::Comma),
             end_index: self.array_slice_index(),
-            rightParen: self.consume(Token::RightBracket),
+            right_paren: self.consume(Token::RightBracket),
         }))
     }
 
     fn array_slice_index(&mut self) -> Expr {
-        match self.lexer.token {
+        match self.lexer.info().token {
             Token::Number => Expr::ArraySliceIndex(ArraySliceIndexExpr {
                 token: self.consume(Token::Number),
             }),
@@ -48,12 +58,12 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn consume(&mut self, next: Token) -> Token {
+    fn consume(&mut self, next: Token) -> InfoToken {
         println!("{:?}", next);
-        if self.lexer.token == next {
-            let token = self.lexer.token.clone();
+        let info = self.lexer.info();
+        if info.token == next {
             self.lexer.advance();
-            token
+            info
         } else {
             panic!("Error parsing the string!")
         }
