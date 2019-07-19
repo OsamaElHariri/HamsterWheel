@@ -1,0 +1,19 @@
+loop -> loop_start block loop_end
+
+loop_start -> LMUSTACH [LPAREN VARIABLE RPAREN] array_accessor [AS VARIABLE] RMUSTACH
+
+loop_end -> LMUSTACH END RMUSTACH
+
+block -> loop | LMUSTACH accessor RMUSTACH | block* anything* block*
+
+array_accessor -> VARIABLE [ [DOT VARIABLE] [array_bracket] ]* [array_slice]
+
+accessor -> VARIABLE [ [array_bracket] [DOT VARIABLE] ]*
+
+dot_variable -> DOT VARIABLE
+
+array_slice -> LBRACKET array_slice_index COMMA array_slice_index RBRACKET
+
+array_bracket -> LBRACKET VARIABLE | NUMBER RBRACKET
+
+array_slice_index ->DOUBLEDOTS | VARIABLE | NUMBER
