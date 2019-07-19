@@ -26,13 +26,6 @@ impl<'a> Parser<'a> {
         self.array_slice()
     }
 
-    fn as_statement(&mut self, scope: &Scope) -> Expr {
-        Expr::AsStatement(AsStatementExpr {
-            r#as: self.consume(Token::As),
-            variable: self.consume(Token::Variable),
-        })
-    }
-
     fn array_slice(&mut self) -> Expr {
         Expr::ArraySlice(Box::new(ArraySliceExpr {
             left_paren: self.consume(Token::LeftBracket),
