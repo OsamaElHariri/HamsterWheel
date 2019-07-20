@@ -55,8 +55,9 @@ impl<'a> Parser<'a> {
         println!("{:?}", next);
         let info = self.lexer.info();
         if info.token == next {
+            let info = info.clone();
             self.lexer.advance();
-            info
+            info.clone()
         } else {
             panic!("Error parsing the string!")
         }
