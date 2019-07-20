@@ -1,6 +1,6 @@
 loop -> loop_start block loop_end
 
-loop_start -> LMUSTACH [LPAREN VARIABLE RPAREN] array_accessor [AS VARIABLE] RMUSTACH
+loop_start -> LMUSTACH LOOP [LPAREN VARIABLE RPAREN] array_accessor [AS VARIABLE] RMUSTACH
 
 loop_end -> LMUSTACH END RMUSTACH
 

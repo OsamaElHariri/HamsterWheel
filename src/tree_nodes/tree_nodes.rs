@@ -2,64 +2,72 @@ use crate::tokenizer::tokenizer::InfoToken;
 
 pub enum Expr {
     ArraySliceIndex(ArraySliceIndexExpr),
-    ArrayBracket(ArrayBracketExpr),
+    ArrayBracketIndex(ArrayBracketIndexExpr),
+    ArrayBracket(Box<ArrayBracketExpr>),
     ArraySlice(Box<ArraySliceExpr>),
     DotVariable(DotVariableExpr),
     Accessor(Box<AccessorExpr>),
     ArrayAccessor(Box<ArrayAccessorExpr>),
+    MustacheAccessor(Box<MustacheAccessorExpr>),
     Block(Box<BlockExpr>),
     LoopEnd(LoopEndExpr),
+    AsVariable(AsVariableExpr),
+    ParenVariableParen(ParenVariableParenExpr),
     LoopStart(Box<LoopStartExpr>),
+    Loop(Box<LoopExpr>),
+}
+
+pub struct LoopExpr {
+    pub loop_start: Box<Expr>,
+    pub block: Box<Expr>,
+    pub loop_end: Box<Expr>,
 }
 
 pub struct LoopStartExpr {
-    left_mustache: InfoToken,
-    loop_variable: Box<Option<Expr>>,
-    array_accessor: Box<Expr>,
-    as_variable: Box<Option<Expr>>,
-    rightt_mustache: InfoToken,
+    pub left_mustache: InfoToken,
+    pub r#loop: InfoToken,
+    pub loop_variable: Box<Option<Expr>>,
+    pub array_accessor: Box<Expr>,
+    pub as_variable: Box<Option<Expr>>,
+    pub right_mustache: InfoToken,
 }
 
-pub struct ParenVariableParen {
-    left_paren: InfoToken,
-    variable: InfoToken,
-    right_paren: InfoToken,
+pub struct ParenVariableParenExpr {
+    pub left_paren: InfoToken,
+    pub variable: InfoToken,
+    pub right_paren: InfoToken,
 }
 
-pub struct AsStatementExpr {
+pub struct AsVariableExpr {
     pub r#as: InfoToken,
     pub variable: InfoToken,
 }
 
 pub struct LoopEndExpr {
-    left_mustache: InfoToken,
-    end: InfoToken,
-    right_mustache: InfoToken,
+    pub left_mustache: InfoToken,
+    pub end: InfoToken,
+    pub right_mustache: InfoToken,
 }
 
 pub struct BlockExpr {
-    block: Box<Expr>,
-}
-
-pub struct BlockAnythingBlock {
     pub blocks: Vec<Expr>,
 }
 
-pub struct MustacheAccessor {
-    left_mustache: InfoToken,
-    accessor: Box<Expr>,
-    right_mustache: InfoToken,
+pub struct MustacheAccessorExpr {
+    pub left_mustache: InfoToken,
+    pub accessor: Box<Expr>,
+    pub right_mustache: InfoToken,
 }
 
 pub struct ArrayAccessorExpr {
     pub variable: InfoToken,
-    pub indexes: Vec<Option<(Expr, Expr)>>,
+    pub indexes: Vec<Expr>,
     pub array_slice: Option<Expr>,
 }
 
 pub struct AccessorExpr {
     pub variable: InfoToken,
-    pub indexes: Vec<Option<(Expr, Expr)>>,
+    pub indexes: Vec<Expr>,
 }
 
 pub struct DotVariableExpr {
@@ -77,10 +85,14 @@ pub struct ArraySliceExpr {
 
 pub struct ArrayBracketExpr {
     pub left_paren: InfoToken,
-    pub variable: InfoToken,
+    pub variable: Expr,
     pub right_paren: InfoToken,
 }
 
 pub struct ArraySliceIndexExpr {
+    pub token: InfoToken,
+}
+
+pub struct ArrayBracketIndexExpr {
     pub token: InfoToken,
 }

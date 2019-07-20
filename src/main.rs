@@ -1,8 +1,18 @@
-use hamster_wheel::tokenizer::tokenizer;
 use hamster_wheel::parser::parser::Parser;
+use hamster_wheel::tokenizer::tokenizer;
 
 fn main() {
-    Parser::new("[ .. , i ]").parse();
+    // Parser::new("[ .. , i ]").parse();
+    Parser::new(
+        "{{Loop(i) rows[0, ..] as row}}
+            Map<String, String> {{row [ 0 ] }} = {
+                {{loop(j) row[1, ..] as cell}}
+                    {{cell.col[0]}} : {{cell}}
+                {{END}}
+            }
+            {{END}}",
+    )
+    .parse();
     // let mut tokenizer = tokenizer::tokenize(
     //     "{{Loop(i) rows[0, ..] as row}}
     //         Map<String, String> {{row [ 0 ] }} = {
@@ -12,7 +22,7 @@ fn main() {
     //         }
     //         {{END LOOP}}",
     // );
-    
+
     // while tokenizer.token != tokenizer::Token::EOF {
     //     println!(
     //         "{:?}, {}, range: {:?}",
