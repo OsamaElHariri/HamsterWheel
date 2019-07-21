@@ -53,11 +53,16 @@ impl<'a> Parser<'a> {
             while self.text.chars().nth(start).expect("").is_whitespace() && start > 0 {
                 start -= 1
             }
+
+            let mut end = info.end + 1;
+            while self.text.chars().nth(end).expect("").is_whitespace() && end < self.text.len() {
+                end += 1
+            }
             tokens.push(InfoToken {
                 token: info.token.clone(),
                 slice: info.slice.clone(),
                 start: start + 1,
-                end: info.end,
+                end: end - 1,
             });
             self.lexer.advance();
         }

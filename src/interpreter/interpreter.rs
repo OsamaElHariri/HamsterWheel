@@ -25,10 +25,22 @@ impl<'a> Interpreter<'a> {
         let mut base_scope = Scope::new();
         base_scope.insert(
             String::from("rows"),
-            VarType::Row(Var::new(vec![
-                String::from("Okay1"),
-                String::from("Okay2"),
-                String::from("Okay3"),
+            VarType::Table(Var::new(vec![
+                vec![
+                    String::from("code"),
+                    String::from("ar"),
+                    String::from("en"),
+                ],
+                vec![
+                    String::from("code1"),
+                    String::from("code1_ar"),
+                    String::from("code1_en"),
+                ],
+                vec![
+                    String::from("code2"),
+                    String::from("code2_ar"),
+                    String::from("code2_en"),
+                ],
             ])),
         );
         self.visit_expr(expr, &mut base_scope)
@@ -51,7 +63,7 @@ impl<'a> Interpreter<'a> {
             let mut child_scope = Scope::with_parent(scope);
             strings.push(self.visit_expr(expr, &mut child_scope));
         }
-        strings.join(" ")
+        strings.join("")
     }
 
     fn visit_anything(&self, anything_expr: Box<AnythingExpr>) -> String {
