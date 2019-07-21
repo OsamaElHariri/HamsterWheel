@@ -1,27 +1,27 @@
 use crate::parser::var_type::VarType;
 use std::collections::HashMap;
 
-pub struct Scope {
-    pub parent: Option<Box<Scope>>,
+pub struct Scope<'a> {
+    pub parent: Option<&'a Scope<'a>>,
     pub vars: HashMap<String, VarType>,
 }
 
-impl Scope {
-    pub fn new() -> Scope {
+impl<'a> Scope<'a> {
+    pub fn new() -> Scope<'a> {
         Scope {
             parent: None,
             vars: HashMap::new(),
         }
     }
 
-    pub fn with_parent(parent: Box<Scope>) -> Scope {
+    pub fn with_parent(parent: &'a Scope) -> Scope<'a> {
         Scope {
             parent: Some(parent),
             vars: HashMap::new(),
         }
     }
 
-    pub fn set_parent(&mut self, parent: Box<Scope>) {
+    pub fn set_parent(&mut self, parent: &'a Scope) {
         self.parent = Some(parent);
     }
 
@@ -29,12 +29,17 @@ impl Scope {
         self.vars.insert(key, var)
     }
 
-    pub fn lookup(&self, key: &String) -> Option<&VarType> {
+    pub fn lookup(&self, key: &String) -> &VarType {
+        let query = self.query(key);
+        query.expect(&format!("Attempted to use undeclared variable {}", key))
+    }
+
+    pub fn query(&self, key: &String) -> Option<&VarType> {
         if let Some(var) = self.vars.get(key) {
             Some(var)
         } else {
             if let Some(parent) = &self.parent {
-                parent.lookup(key)
+                parent.query(key)
             } else {
                 None
             }

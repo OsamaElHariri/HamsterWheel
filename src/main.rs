@@ -1,35 +1,28 @@
+use hamster_wheel::interpreter::interpreter::Interpreter;
 use hamster_wheel::parser::parser::Parser;
-use hamster_wheel::tokenizer::tokenizer;
 
 fn main() {
-    // Parser::new("[ .. , i ]").parse();
-    Parser::new(
-        "{{Loop(i) rows[0, ..] as row}}
-            Map<String, String> {{row [ 0 ] }} = {
-                {{loop(j) row[1, ..] as cell}}
-                    {{cell.col[0]}} : {{cell}}
-                {{END}}
-            }
-            {{END}}",
-    )
-    .parse();
-    // let mut tokenizer = tokenizer::tokenize(
+    // Parser::new("hello there {{ ok }} something {{ ok }}").parse();
+    // let output = Interpreter::new("hello there {{ ok }} something {{ ok }}").interpret();
+    // let output = Interpreter::new(
     //     "{{Loop(i) rows[0, ..] as row}}
     //         Map<String, String> {{row [ 0 ] }} = {
     //             {{loop(j) row[1, ..] as cell}}
     //                 {{cell.col[0]}} : {{cell}}
-    //             {{END LOOP}}
+    //                 {{rows[0][j]}} : {{cell}}
+    //             {{END}}
     //         }
-    //         {{END LOOP}}",
-    // );
-
-    // while tokenizer.token != tokenizer::Token::EOF {
-    //     println!(
-    //         "{:?}, {}, range: {:?}",
-    //         tokenizer.token,
-    //         tokenizer.slice(),
-    //         tokenizer.range()
-    //     );
-    //     tokenizer.advance();
-    // }
+    //         {{END}}",
+    // )
+    // .interpret();
+    let output = Interpreter::new(
+        "{{Loop(i) rows[0, ..] as someVar}}
+            Loop number {{ i }}, value is: {{ someVar }}
+            {{Loop(someVar) rows as other}}
+                shadowing parent variable {{ someVar }}, value is: {{ other }}
+            {{END}}
+        {{END}}",
+    )
+    .interpret();
+    println!("{}", output);
 }

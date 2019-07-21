@@ -1,22 +1,7 @@
-use crate::parser::scope::Scope;
 use crate::tokenizer::tokenizer::InfoToken;
 use crate::tokenizer::tokenizer::Token;
 use crate::tokenizer::tokenizer::Tokenizer;
-use crate::tree_nodes::tree_nodes::AccessorExpr;
-use crate::tree_nodes::tree_nodes::ArrayAccessorExpr;
-use crate::tree_nodes::tree_nodes::ArrayBracketExpr;
-use crate::tree_nodes::tree_nodes::ArrayBracketIndexExpr;
-use crate::tree_nodes::tree_nodes::ArraySliceExpr;
-use crate::tree_nodes::tree_nodes::ArraySliceIndexExpr;
-use crate::tree_nodes::tree_nodes::AsVariableExpr;
-use crate::tree_nodes::tree_nodes::BlockExpr;
-use crate::tree_nodes::tree_nodes::DotVariableExpr;
-use crate::tree_nodes::tree_nodes::Expr;
-use crate::tree_nodes::tree_nodes::LoopEndExpr;
-use crate::tree_nodes::tree_nodes::LoopExpr;
-use crate::tree_nodes::tree_nodes::LoopStartExpr;
-use crate::tree_nodes::tree_nodes::MustacheAccessorExpr;
-use crate::tree_nodes::tree_nodes::ParenVariableParenExpr;
+use crate::tree_nodes::tree_nodes::*;
 use std::error::Error;
 
 pub struct Parser<'a> {
@@ -33,13 +18,13 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse(&mut self) -> Expr {
-        println!("parse fn");
+        // println!("parse fn");
         // let a = Scope::new();
         self.block()
     }
 
     fn block(&mut self) -> Expr {
-        println!("block");
+        // println!("block");
         let mut blocks: Vec<Expr> = vec![];
         while self.lexer.info().token != Token::EOF {
             if self.lexer.info().token == Token::LeftMustache {
@@ -50,84 +35,107 @@ impl<'a> Parser<'a> {
                     _ => blocks.push(self.mustache_accessor()),
                 };
             } else {
-                self.lexer.advance();
+                blocks.push(self.anything());
             };
         }
 
         Expr::Block(Box::new(BlockExpr { blocks }))
     }
 
+    fn anything(&mut self) -> Expr {
+        // println!("anything");
+        let mut tokens: Vec<InfoToken> = vec![];
+        while self.lexer.info().token != Token::EOF
+            && self.lexer.info().token != Token::LeftMustache
+        {
+            let info = self.lexer.info();
+            let mut start = info.start - 1;
+            while self.text.chars().nth(start).expect("").is_whitespace() && start > 0 {
+                start -= 1
+            }
+            tokens.push(InfoToken {
+                token: info.token.clone(),
+                slice: info.slice.clone(),
+                start: start + 1,
+                end: info.end,
+            });
+            self.lexer.advance();
+        }
+
+        Expr::Anything(Box::new(AnythingExpr { tokens }))
+    }
+
     fn mustache_accessor(&mut self) -> Expr {
-        println!("mustache_accessor");
-        Expr::MustacheAccessor(Box::new(MustacheAccessorExpr {
+        // println!("mustache_accessor");
+        Expr::MustacheAccessor(MustacheAccessorExpr {
             left_mustache: self.consume(Token::LeftMustache),
-            accessor: Box::new(self.accessor()),
+            accessor: self.accessor(),
             right_mustache: self.consume(Token::RightMustache),
-        }))
+        })
     }
 
     fn r#loop(&mut self) -> Expr {
-        println!("loop");
+        // println!("loop");
         Expr::Loop(Box::new(LoopExpr {
-            loop_start: Box::new(self.loop_start()),
+            loop_start: self.loop_start(),
             block: Box::new(self.block()),
-            loop_end: Box::new(self.loop_end()),
+            loop_end: self.loop_end(),
         }))
     }
 
-    fn loop_start(&mut self) -> Expr {
-        println!("loop_start");
+    fn loop_start(&mut self) -> LoopStartExpr {
+        // println!("loop_start");
         let left_mustache = self.consume(Token::LeftMustache);
         let r#loop = self.consume(Token::Loop);
-        let mut loop_variable: Box<Option<Expr>> = Box::new(None);
+        let mut loop_variable: Option<ParenVariableParenExpr> = None;
         if self.lexer.info().token == Token::LeftParentheses {
-            loop_variable = Box::new(Some(self.loop_variable()));
+            loop_variable = Some(self.loop_variable());
         };
-        let array_accessor = Box::new(self.array_accessor());
-        let mut as_variable: Box<Option<Expr>> = Box::new(None);
+        let array_accessor = self.array_accessor();
+        let mut as_variable: Option<AsVariableExpr> = None;
         if self.lexer.info().token == Token::As {
-            as_variable = Box::new(Some(self.as_variable()));
+            as_variable = Some(self.as_variable());
         };
-        Expr::LoopStart(Box::new(LoopStartExpr {
+        LoopStartExpr {
             left_mustache,
             r#loop,
             loop_variable,
             array_accessor,
             as_variable,
             right_mustache: self.consume(Token::RightMustache),
-        }))
+        }
     }
 
-    fn loop_variable(&mut self) -> Expr {
-        println!("loop_variable");
-        Expr::ParenVariableParen(ParenVariableParenExpr {
+    fn loop_variable(&mut self) -> ParenVariableParenExpr {
+        // println!("loop_variable");
+        ParenVariableParenExpr {
             left_paren: self.consume(Token::LeftParentheses),
             variable: self.consume(Token::Variable),
             right_paren: self.consume(Token::RightParentheses),
-        })
+        }
     }
 
-    fn as_variable(&mut self) -> Expr {
-        println!("as_variable");
-        Expr::AsVariable(AsVariableExpr {
+    fn as_variable(&mut self) -> AsVariableExpr {
+        // println!("as_variable");
+        AsVariableExpr {
             r#as: self.consume(Token::As),
             variable: self.consume(Token::Variable),
-        })
+        }
     }
 
-    fn loop_end(&mut self) -> Expr {
-        println!("loop_end");
-        Expr::LoopEnd(LoopEndExpr {
+    fn loop_end(&mut self) -> LoopEndExpr {
+        // println!("loop_end");
+        LoopEndExpr {
             left_mustache: self.consume(Token::LeftMustache),
             end: self.consume(Token::End),
             right_mustache: self.consume(Token::RightMustache),
-        })
+        }
     }
 
-    fn array_accessor(&mut self) -> Expr {
-        println!("array_accessor");
+    fn array_accessor(&mut self) -> ArrayAccessorExpr {
+        // println!("array_accessor");
         let variable = self.consume(Token::Variable);
-        let mut indexers: Vec<Expr> = vec![];
+        let mut indexers: Vec<ArrayBracketExpr> = vec![];
         while self.lexer.info().token == Token::LeftBracket || self.lexer.info().token == Token::Dot
         {
             if self.lexer.info().token == Token::LeftBracket {
@@ -145,9 +153,9 @@ impl<'a> Parser<'a> {
                 indexers.push(self.array_bracket());
             };
 
-            if self.lexer.info().token == Token::Dot {
-                indexers.push(self.dot_variable());
-            };
+            // if self.lexer.info().token == Token::Dot {
+            //     indexers.push(self.dot_variable());
+            // };
         }
 
         let array_slice = if self.lexer.info().token == Token::LeftBracket {
@@ -156,91 +164,91 @@ impl<'a> Parser<'a> {
             None
         };
 
-        Expr::ArrayAccessor(Box::new(ArrayAccessorExpr {
+        ArrayAccessorExpr {
             variable,
             indexes: indexers,
             array_slice,
-        }))
+        }
     }
 
-    fn accessor(&mut self) -> Expr {
-        println!("accessor");
+    fn accessor(&mut self) -> AccessorExpr {
+        // println!("accessor");
         let variable = self.consume(Token::Variable);
-        let mut indexers: Vec<Expr> = vec![];
+        let mut indexers: Vec<ArrayBracketExpr> = vec![];
         while self.lexer.info().token == Token::LeftBracket || self.lexer.info().token == Token::Dot
         {
             if self.lexer.info().token == Token::LeftBracket {
                 indexers.push(self.array_bracket());
             };
 
-            if self.lexer.info().token == Token::Dot {
-                indexers.push(self.dot_variable());
-            };
+            // if self.lexer.info().token == Token::Dot {
+            //     indexers.push(self.dot_variable());
+            // };
         }
 
-        Expr::Accessor(Box::new(AccessorExpr {
+        AccessorExpr {
             variable,
             indexes: indexers,
-        }))
+        }
     }
 
-    fn dot_variable(&mut self) -> Expr {
-        println!("dot_variable");
-        Expr::DotVariable(DotVariableExpr {
-            dot: self.consume(Token::Dot),
-            variable: self.consume(Token::Variable),
-        })
-    }
+    // fn dot_variable(&mut self) -> Expr {
+    //     // println!("dot_variable");
+    //     Expr::DotVariable(DotVariableExpr {
+    //         dot: self.consume(Token::Dot),
+    //         variable: self.consume(Token::Variable),
+    //     })
+    // }
 
-    fn array_slice(&mut self) -> Expr {
-        println!("array_slice");
-        Expr::ArraySlice(Box::new(ArraySliceExpr {
+    fn array_slice(&mut self) -> ArraySliceExpr {
+        // println!("array_slice");
+        ArraySliceExpr {
             left_paren: self.consume(Token::LeftBracket),
             start_index: self.array_slice_index(),
             comma: self.consume(Token::Comma),
             end_index: self.array_slice_index(),
             right_paren: self.consume(Token::RightBracket),
-        }))
-    }
-
-    fn array_slice_index(&mut self) -> Expr {
-        println!("array_slice_index");
-        match self.lexer.info().token {
-            Token::DoubleDot => Expr::ArraySliceIndex(ArraySliceIndexExpr {
-                token: self.consume(Token::DoubleDot),
-            }),
-            Token::Variable => Expr::ArraySliceIndex(ArraySliceIndexExpr {
-                token: self.consume(Token::Variable),
-            }),
-            _ => Expr::ArraySliceIndex(ArraySliceIndexExpr {
-                token: self.consume(Token::Number),
-            }),
         }
     }
 
-    fn array_bracket(&mut self) -> Expr {
-        println!("array_bracket");
-        Expr::ArrayBracket(Box::new(ArrayBracketExpr {
+    fn array_slice_index(&mut self) -> ArraySliceIndexExpr {
+        // println!("array_slice_index");
+        match self.lexer.info().token {
+            Token::DoubleDot => ArraySliceIndexExpr {
+                token: self.consume(Token::DoubleDot),
+            },
+            Token::Variable => ArraySliceIndexExpr {
+                token: self.consume(Token::Variable),
+            },
+            _ => ArraySliceIndexExpr {
+                token: self.consume(Token::Number),
+            },
+        }
+    }
+
+    fn array_bracket(&mut self) -> ArrayBracketExpr {
+        // println!("array_bracket");
+        ArrayBracketExpr {
             left_paren: self.consume(Token::LeftBracket),
             variable: self.array_bracket_index(),
             right_paren: self.consume(Token::RightBracket),
-        }))
+        }
     }
 
-    fn array_bracket_index(&mut self) -> Expr {
-        println!("array_bracket_index");
+    fn array_bracket_index(&mut self) -> ArrayBracketIndexExpr {
+        // println!("array_bracket_index");
         match self.lexer.info().token {
-            Token::Variable => Expr::ArrayBracketIndex(ArrayBracketIndexExpr {
+            Token::Variable => ArrayBracketIndexExpr {
                 token: self.consume(Token::Variable),
-            }),
-            _ => Expr::ArrayBracketIndex(ArrayBracketIndexExpr {
+            },
+            _ => ArrayBracketIndexExpr {
                 token: self.consume(Token::Number),
-            }),
+            },
         }
     }
 
     fn consume(&mut self, next: Token) -> InfoToken {
-        // println!("{:?}", next);
+        println!("{:?}", next);
         let info = self.lexer.info();
         if info.token == next {
             let info = info.clone();
@@ -248,8 +256,8 @@ impl<'a> Parser<'a> {
             info.clone()
         } else {
             panic!(
-                "{:?} is not a {:?}.\nCurrent slice reads {}.\n The slice runs from {} to {}",
-                info.token, next, info.slice, info.start, info.end
+                "Expected {:?}, found {:?}.\nCurrent slice reads {}.\n The slice runs from {} to {}",
+                 next, info.token, info.slice, info.start, info.end
             )
         }
     }

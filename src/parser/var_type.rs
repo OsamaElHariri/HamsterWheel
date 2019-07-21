@@ -1,6 +1,24 @@
+#[derive(Clone)]
 pub enum VarType {
-    Number(usize),
-    Value(String),
-    Row(Vec<String>),
-    Table(Vec<Vec<String>>),
+    Number(Var<usize>),
+    Value(Var<String>),
+    Row(Var<Vec<String>>),
+    Table(Var<Vec<Vec<String>>>),
+}
+
+#[derive(Clone)]
+pub struct Var<T> {
+    pub row: usize,
+    pub col: usize,
+    pub data: T,
+}
+
+impl<T> Var<T> {
+    pub fn new(data: T) -> Var<T> {
+        Var {
+            row: 0,
+            col: 0,
+            data,
+        }
+    }
 }
