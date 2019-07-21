@@ -1,3 +1,7 @@
+start -> output block
+
+output -> LMUSTACH OUTPUT VARIABLE RMUSTACH
+
 loop -> [loop_config] loop_start block loop_end
 
 loop_config -> LMUSTACH CONFIG RMUSTACH [loop_config_option] LMUSTACH END RMUSTACH

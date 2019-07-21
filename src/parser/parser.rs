@@ -19,7 +19,43 @@ impl<'a> Parser<'a> {
 
     pub fn parse(&mut self) -> Expr {
         // let a = Scope::new();
-        self.block()
+        self.start()
+    }
+
+    fn start(&mut self) -> Expr {
+        Expr::Start(Box::new(StartExpr {
+            output: self.output(),
+            expr: self.block(),
+        }))
+    }
+
+    fn output(&mut self) -> OutputExpr {
+        let left_mustache = self.consume(Token::LeftMustache);
+        let output = self.consume(Token::Output);
+        let mut vars = vec![];
+        while self.lexer.info().token != Token::EOF
+            && self.lexer.info().token != Token::RightMustache
+            && self.lexer.info().token != Token::LeftMustache
+        {
+            let token = self.lexer.info().token.clone();
+            vars.push(self.consume(token));
+        }
+        if vars.len() == 0 {
+            panic!("Could not parse configs");
+        }
+        let value_text = self.text[vars[0].start..vars[vars.len() - 1].end].to_string();
+        let value = InfoToken {
+            token: Token::Variable,
+            slice: value_text,
+            start: vars[0].start,
+            end: vars.last().expect("non-empty").end,
+        };
+        OutputExpr {
+            left_mustache,
+            output,
+            file_path: value,
+            right_mustache: self.consume(Token::RightMustache),
+        }
     }
 
     fn block(&mut self) -> Expr {

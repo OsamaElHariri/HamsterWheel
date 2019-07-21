@@ -2,10 +2,25 @@ use crate::tokenizer::tokenizer::InfoToken;
 
 #[derive(Clone)]
 pub enum Expr {
+    Start(Box<StartExpr>),
     Block(Box<BlockExpr>),
     Anything(Box<AnythingExpr>),
     Loop(Box<LoopExpr>),
     MustacheAccessor(MustacheAccessorExpr),
+}
+
+#[derive(Clone)]
+pub struct StartExpr {
+    pub output: OutputExpr,
+    pub expr: Expr,
+}
+
+#[derive(Clone)]
+pub struct OutputExpr {
+    pub left_mustache: InfoToken,
+    pub output: InfoToken,
+    pub file_path: InfoToken,
+    pub right_mustache: InfoToken,
 }
 
 #[derive(Clone)]

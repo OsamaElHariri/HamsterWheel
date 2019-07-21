@@ -48,11 +48,16 @@ impl<'a> Interpreter<'a> {
 
     pub fn visit_expr(&self, expr: Expr, scope: &mut Scope) -> String {
         match expr {
+            Expr::Start(node) => self.visit_start(node, scope),
             Expr::Anything(node) => self.visit_anything(node),
             Expr::Block(node) => self.visit_block(node, scope),
             Expr::MustacheAccessor(node) => self.visit_mustache_accessor(node, scope),
             Expr::Loop(node) => self.visit_loop(node, scope),
         }
+    }
+
+    fn visit_start(&self, start_expr: Box<StartExpr>, scope: &mut Scope) -> String {
+        self.visit_expr(start_expr.expr, scope)
     }
 
     fn visit_block(&self, block_expr: Box<BlockExpr>, scope: &mut Scope) -> String {
@@ -101,7 +106,7 @@ impl<'a> Interpreter<'a> {
         let mut strings: Vec<String> = vec![];
         let loop_iterator = self.visit_loop_start(loop_expr.loop_start, scope);
 
-        
+
         for mut scope in loop_iterator {
             let output = self.visit_expr(*loop_expr.block.clone(), &mut scope);
             strings.push(output);

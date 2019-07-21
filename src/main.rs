@@ -2,7 +2,8 @@ use hamster_wheel::interpreter::interpreter::Interpreter;
 
 fn main() {
     let output = Interpreter::new(
-        "{{config}}
+        "{{ output /some/file/path/../ok.txt }}
+        {{config}}
         name: something;
         another: this/file/config/location;
         url: https://Something.com;
