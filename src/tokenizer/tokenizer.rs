@@ -5,6 +5,9 @@ pub enum Token {
     #[regex = "(?i)loop"]
     Loop,
 
+    #[regex = "(?i)config"]
+    Config,
+
     #[regex = "(?i)end"]
     End,
 
@@ -37,6 +40,12 @@ pub enum Token {
 
     #[token = ","]
     Comma,
+
+    #[token = ":"]
+    Colon,
+
+    #[token = ";"]
+    SemiColon,
 
     #[regex = "[0-9]+"]
     Number,
@@ -105,10 +114,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     pub fn advance(&mut self) {
-        // self.peek_index = if self.peeks.len() > 1 { 1 } else { 0 };
-        // self.peek_index = 0;
-        self.peek_index = 1;
-
+        self.reset_peek();
         if self.peeks.len() == 0 {
             self.lexer.advance();
         } else {
@@ -128,6 +134,10 @@ impl<'a> Tokenizer<'a> {
             self.lexer.advance();
             self.get_current_info()
         }
+    }
+
+    pub fn reset_peek(&mut self) {
+        self.peek_index = 1;
     }
 }
 

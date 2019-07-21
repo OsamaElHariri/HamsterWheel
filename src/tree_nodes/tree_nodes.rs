@@ -10,9 +10,27 @@ pub enum Expr {
 
 #[derive(Clone)]
 pub struct LoopExpr {
+    pub loop_config: Option<LoopConfigExpr>,
     pub loop_start: LoopStartExpr,
     pub block: Box<Expr>,
-    pub loop_end: LoopEndExpr,
+    pub loop_end: EndExpr,
+}
+
+#[derive(Clone)]
+pub struct LoopConfigExpr {
+    pub left_mustache: InfoToken,
+    pub config: InfoToken,
+    pub right_mustache: InfoToken,
+    pub configs: Vec<LoopConfigOptionExpr>,
+    pub end: EndExpr,
+}
+
+#[derive(Clone)]
+pub struct LoopConfigOptionExpr {
+    pub variable: InfoToken,
+    pub colon: InfoToken,
+    pub value: InfoToken,
+    pub semicolon: InfoToken,
 }
 
 #[derive(Clone)]
@@ -39,7 +57,7 @@ pub struct AsVariableExpr {
 }
 
 #[derive(Clone)]
-pub struct LoopEndExpr {
+pub struct EndExpr {
     pub left_mustache: InfoToken,
     pub end: InfoToken,
     pub right_mustache: InfoToken,

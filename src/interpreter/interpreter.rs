@@ -100,6 +100,8 @@ impl<'a> Interpreter<'a> {
     fn visit_loop(&self, loop_expr: Box<LoopExpr>, scope: &mut Scope) -> String {
         let mut strings: Vec<String> = vec![];
         let loop_iterator = self.visit_loop_start(loop_expr.loop_start, scope);
+
+        
         for mut scope in loop_iterator {
             let output = self.visit_expr(*loop_expr.block.clone(), &mut scope);
             strings.push(output);

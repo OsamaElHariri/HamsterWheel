@@ -1,4 +1,8 @@
-loop -> loop_start block loop_end
+loop -> [loop_config] loop_start block loop_end
+
+loop_config -> LMUSTACH CONFIG RMUSTACH [loop_config_option] LMUSTACH END RMUSTACH
+
+loop_config_option -> VARIABLE COLON anything SEMICOLON
 
 loop_start -> LMUSTACH LOOP [LPAREN VARIABLE RPAREN] array_accessor [AS VARIABLE] RMUSTACH
 

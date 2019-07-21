@@ -3,7 +3,7 @@ use crate::parser::var_type::Var;
 use crate::parser::var_type::VarType;
 
 pub struct LoopIterator<'a> {
-    start: usize,
+    _start: usize,
     end: usize,
     scope: &'a Scope<'a>,
     loop_index: usize,
@@ -25,7 +25,7 @@ impl<'a> LoopIterator<'a> {
         LoopIterator {
             scope,
             collection,
-            start: min,
+            _start: min,
             end: max,
             loop_variable_name,
             as_variable_name,

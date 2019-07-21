@@ -18,19 +18,17 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse(&mut self) -> Expr {
-        // println!("parse fn");
         // let a = Scope::new();
         self.block()
     }
 
     fn block(&mut self) -> Expr {
-        // println!("block");
         let mut blocks: Vec<Expr> = vec![];
         while self.lexer.info().token != Token::EOF {
             if self.lexer.info().token == Token::LeftMustache {
                 let next_info = self.lexer.peek();
                 match next_info.token {
-                    Token::Loop => blocks.push(self.r#loop()),
+                    Token::Loop | Token::Config => blocks.push(self.r#loop()),
                     Token::End => break,
                     _ => blocks.push(self.mustache_accessor()),
                 };
@@ -43,7 +41,6 @@ impl<'a> Parser<'a> {
     }
 
     fn anything(&mut self) -> Expr {
-        // println!("anything");
         let mut tokens: Vec<InfoToken> = vec![];
         while self.lexer.info().token != Token::EOF
             && self.lexer.info().token != Token::LeftMustache
@@ -71,7 +68,6 @@ impl<'a> Parser<'a> {
     }
 
     fn mustache_accessor(&mut self) -> Expr {
-        // println!("mustache_accessor");
         Expr::MustacheAccessor(MustacheAccessorExpr {
             left_mustache: self.consume(Token::LeftMustache),
             accessor: self.accessor(),
@@ -80,16 +76,48 @@ impl<'a> Parser<'a> {
     }
 
     fn r#loop(&mut self) -> Expr {
-        // println!("loop");
+        self.lexer.reset_peek();
+        let info = self.lexer.peek();
+        let configs = match info.token {
+            Token::Config => Some(self.loop_config()),
+            _ => None,
+        };
         Expr::Loop(Box::new(LoopExpr {
+            loop_config: configs,
             loop_start: self.loop_start(),
             block: Box::new(self.block()),
             loop_end: self.loop_end(),
         }))
     }
 
+    fn loop_config(&mut self) -> LoopConfigExpr {
+        let left_mustache = self.consume(Token::LeftMustache);
+        let config = self.consume(Token::Config);
+        let right_mustache = self.consume(Token::RightMustache);
+        let mut configs = vec![];
+        while self.lexer.info().token != Token::LeftMustache {
+            configs.push(self.loop_config_option());
+        }
+
+        LoopConfigExpr {
+            left_mustache,
+            config,
+            right_mustache,
+            configs: configs,
+            end: self.loop_end(),
+        }
+    }
+
+    fn loop_config_option(&mut self) -> LoopConfigOptionExpr {
+        LoopConfigOptionExpr {
+            variable: self.consume(Token::Variable),
+            colon: self.consume(Token::Colon),
+            value: self.consume(Token::Variable),
+            semicolon: self.consume(Token::SemiColon),
+        }
+    }
+
     fn loop_start(&mut self) -> LoopStartExpr {
-        // println!("loop_start");
         let left_mustache = self.consume(Token::LeftMustache);
         let r#loop = self.consume(Token::Loop);
         let mut loop_variable: Option<ParenVariableParenExpr> = None;
@@ -112,7 +140,6 @@ impl<'a> Parser<'a> {
     }
 
     fn loop_variable(&mut self) -> ParenVariableParenExpr {
-        // println!("loop_variable");
         ParenVariableParenExpr {
             left_paren: self.consume(Token::LeftParentheses),
             variable: self.consume(Token::Variable),
@@ -121,16 +148,14 @@ impl<'a> Parser<'a> {
     }
 
     fn as_variable(&mut self) -> AsVariableExpr {
-        // println!("as_variable");
         AsVariableExpr {
             r#as: self.consume(Token::As),
             variable: self.consume(Token::Variable),
         }
     }
 
-    fn loop_end(&mut self) -> LoopEndExpr {
-        // println!("loop_end");
-        LoopEndExpr {
+    fn loop_end(&mut self) -> EndExpr {
+        EndExpr {
             left_mustache: self.consume(Token::LeftMustache),
             end: self.consume(Token::End),
             right_mustache: self.consume(Token::RightMustache),
@@ -138,7 +163,6 @@ impl<'a> Parser<'a> {
     }
 
     fn array_accessor(&mut self) -> ArrayAccessorExpr {
-        // println!("array_accessor");
         let variable = self.consume(Token::Variable);
         let mut indexers: Vec<ArrayBracketExpr> = vec![];
         while self.lexer.info().token == Token::LeftBracket || self.lexer.info().token == Token::Dot
@@ -177,7 +201,6 @@ impl<'a> Parser<'a> {
     }
 
     fn accessor(&mut self) -> AccessorExpr {
-        // println!("accessor");
         let variable = self.consume(Token::Variable);
         let mut indexers: Vec<ArrayBracketExpr> = vec![];
         while self.lexer.info().token == Token::LeftBracket || self.lexer.info().token == Token::Dot
@@ -198,7 +221,6 @@ impl<'a> Parser<'a> {
     }
 
     // fn dot_variable(&mut self) -> Expr {
-    //     // println!("dot_variable");
     //     Expr::DotVariable(DotVariableExpr {
     //         dot: self.consume(Token::Dot),
     //         variable: self.consume(Token::Variable),
@@ -206,7 +228,6 @@ impl<'a> Parser<'a> {
     // }
 
     fn array_slice(&mut self) -> ArraySliceExpr {
-        // println!("array_slice");
         ArraySliceExpr {
             left_paren: self.consume(Token::LeftBracket),
             start_index: self.array_slice_index(),
@@ -217,7 +238,6 @@ impl<'a> Parser<'a> {
     }
 
     fn array_slice_index(&mut self) -> ArraySliceIndexExpr {
-        // println!("array_slice_index");
         match self.lexer.info().token {
             Token::DoubleDot => ArraySliceIndexExpr {
                 token: self.consume(Token::DoubleDot),
@@ -232,7 +252,6 @@ impl<'a> Parser<'a> {
     }
 
     fn array_bracket(&mut self) -> ArrayBracketExpr {
-        // println!("array_bracket");
         ArrayBracketExpr {
             left_paren: self.consume(Token::LeftBracket),
             variable: self.array_bracket_index(),
@@ -241,7 +260,6 @@ impl<'a> Parser<'a> {
     }
 
     fn array_bracket_index(&mut self) -> ArrayBracketIndexExpr {
-        // println!("array_bracket_index");
         match self.lexer.info().token {
             Token::Variable => ArrayBracketIndexExpr {
                 token: self.consume(Token::Variable),
