@@ -109,10 +109,31 @@ impl<'a> Parser<'a> {
     }
 
     fn loop_config_option(&mut self) -> LoopConfigOptionExpr {
+        let variable = self.consume(Token::Variable);
+        let colon = self.consume(Token::Colon);
+        let mut vars = vec![];
+        while self.lexer.info().token != Token::EOF
+            && self.lexer.info().token != Token::SemiColon
+            && self.lexer.info().token != Token::LeftMustache
+        {
+            let token = self.lexer.info().token.clone();
+            vars.push(self.consume(token));
+        }
+        if vars.len() == 0 {
+            panic!("Could not parse configs");
+        }
+        let value_text = self.text[vars[0].start..vars[vars.len() - 1].end].to_string();
+        let value = InfoToken {
+            token: Token::Variable,
+            slice: value_text,
+            start: vars[0].start,
+            end: vars.last().expect("non-empty").end,
+        };
+
         LoopConfigOptionExpr {
-            variable: self.consume(Token::Variable),
-            colon: self.consume(Token::Colon),
-            value: self.consume(Token::Variable),
+            variable,
+            colon,
+            value: value,
             semicolon: self.consume(Token::SemiColon),
         }
     }
@@ -271,7 +292,7 @@ impl<'a> Parser<'a> {
     }
 
     fn consume(&mut self, next: Token) -> InfoToken {
-        println!("{:?}", next);
+        // println!("{:?}", next);
         let info = self.lexer.info();
         if info.token == next {
             let info = info.clone();

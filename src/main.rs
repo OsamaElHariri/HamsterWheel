@@ -4,9 +4,11 @@ fn main() {
     let output = Interpreter::new(
         "{{config}}
         name: something;
+        another: this/file/config/location;
+        url: https://Something.com;
         {{end}}
         {{Loop(i) rows[1, ..] as row}}
-            {{i}}
+            {{ i }}
         {{END}}",
     )
     .interpret();
