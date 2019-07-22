@@ -1,4 +1,5 @@
 use crate::interpreter::importer::Importer;
+use crate::interpreter::interpreter_result::InterpreterResult;
 use crate::interpreter::loop_iterator::LoopIterator;
 use crate::parser::parser::Parser;
 use crate::parser::scope::Scope;
@@ -12,6 +13,7 @@ use crate::tree_nodes::tree_nodes::*;
 pub struct Interpreter<'a> {
     pub text: &'a str,
     parser: Parser<'a>,
+    output_file: String,
 }
 
 impl<'a> Interpreter<'a> {
@@ -19,32 +21,20 @@ impl<'a> Interpreter<'a> {
         Interpreter {
             text,
             parser: Parser::new(text),
+            output_file: String::from(""),
         }
     }
 
-    pub fn interpret(&mut self) -> String {
+    pub fn interpret(&mut self) -> InterpreterResult {
         let expr = self.parser.parse();
         let mut base_scope = Scope::new();
-        base_scope.insert(
-            String::from("rows"),
-            VarType::Table(Var::new(vec![
-                vec![String::from("code"), String::from("ar"), String::from("en")],
-                vec![
-                    String::from("code1"),
-                    String::from("code1_ar"),
-                    String::from("code1_en"),
-                ],
-                vec![
-                    String::from("code2"),
-                    String::from("code2_ar"),
-                    String::from("code2_en"),
-                ],
-            ])),
-        );
-        self.visit_expr(expr, &mut base_scope)
+        InterpreterResult {
+            text: self.visit_expr(expr, &mut base_scope),
+            output_file: self.output_file.clone(),
+        }
     }
 
-    pub fn visit_expr(&self, expr: Expr, scope: &mut Scope) -> String {
+    pub fn visit_expr(&mut self, expr: Expr, scope: &mut Scope) -> String {
         match expr {
             Expr::Start(node) => self.visit_start(node, scope),
             Expr::Anything(node) => self.visit_anything(node),
@@ -54,11 +44,12 @@ impl<'a> Interpreter<'a> {
         }
     }
 
-    fn visit_start(&self, start_expr: Box<StartExpr>, scope: &mut Scope) -> String {
+    fn visit_start(&mut self, start_expr: Box<StartExpr>, scope: &mut Scope) -> String {
+        self.output_file = start_expr.output.file_path.slice;
         self.visit_expr(start_expr.expr, scope)
     }
 
-    fn visit_block(&self, block_expr: Box<BlockExpr>, scope: &mut Scope) -> String {
+    fn visit_block(&mut self, block_expr: Box<BlockExpr>, scope: &mut Scope) -> String {
         let exprs = block_expr.blocks;
         let mut strings: Vec<String> = vec![];
 
@@ -102,7 +93,7 @@ impl<'a> Interpreter<'a> {
         }
     }
 
-    fn visit_loop(&self, loop_expr: Box<LoopExpr>, scope: &mut Scope) -> String {
+    fn visit_loop(&mut self, loop_expr: Box<LoopExpr>, scope: &mut Scope) -> String {
         let mut strings: Vec<String> = vec![];
         let loop_iterator = self.visit_loop_start(loop_expr.loop_start, scope);
 
