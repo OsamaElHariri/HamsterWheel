@@ -3,13 +3,12 @@ use hamster_wheel::interpreter::interpreter::Interpreter;
 fn main() {
     let output = Interpreter::new(
         "{{ output /some/file/path/../ok.txt }}
-        {{config}}
+        {{import}}
         name: something;
-        another: this/file/config/location;
-        url: https://Something.com;
+        key: 1-hbZd6LH3153gVZi6CGq6n1HWv36Omt2k_OMc_6w3CE;
         {{end}}
-        {{Loop(i) rows[1, ..] as row}}
-            {{ i }}
+        {{Loop(i) something as row}}
+            Cell: ({{ row[0] }}, {{ row[1] }});
         {{END}}",
     )
     .interpret();

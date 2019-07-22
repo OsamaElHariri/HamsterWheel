@@ -1,3 +1,4 @@
+use crate::interpreter::importer::Importer;
 use crate::interpreter::loop_iterator::LoopIterator;
 use crate::parser::parser::Parser;
 use crate::parser::scope::Scope;
@@ -5,6 +6,7 @@ use crate::parser::var_type::Var;
 use crate::parser::var_type::VarType;
 use crate::tokenizer::tokenizer::InfoToken;
 use crate::tokenizer::tokenizer::Token;
+
 use crate::tree_nodes::tree_nodes::*;
 
 pub struct Interpreter<'a> {
@@ -26,11 +28,7 @@ impl<'a> Interpreter<'a> {
         base_scope.insert(
             String::from("rows"),
             VarType::Table(Var::new(vec![
-                vec![
-                    String::from("code"),
-                    String::from("ar"),
-                    String::from("en"),
-                ],
+                vec![String::from("code"), String::from("ar"), String::from("en")],
                 vec![
                     String::from("code1"),
                     String::from("code1_ar"),
@@ -63,6 +61,8 @@ impl<'a> Interpreter<'a> {
     fn visit_block(&self, block_expr: Box<BlockExpr>, scope: &mut Scope) -> String {
         let exprs = block_expr.blocks;
         let mut strings: Vec<String> = vec![];
+
+        Importer::update_scope(scope, block_expr.imports);
 
         for expr in exprs {
             let mut child_scope = Scope::with_parent(scope);
@@ -105,7 +105,6 @@ impl<'a> Interpreter<'a> {
     fn visit_loop(&self, loop_expr: Box<LoopExpr>, scope: &mut Scope) -> String {
         let mut strings: Vec<String> = vec![];
         let loop_iterator = self.visit_loop_start(loop_expr.loop_start, scope);
-
 
         for mut scope in loop_iterator {
             let output = self.visit_expr(*loop_expr.block.clone(), &mut scope);

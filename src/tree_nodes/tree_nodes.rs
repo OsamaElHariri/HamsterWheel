@@ -25,27 +25,9 @@ pub struct OutputExpr {
 
 #[derive(Clone)]
 pub struct LoopExpr {
-    pub loop_config: Option<LoopConfigExpr>,
     pub loop_start: LoopStartExpr,
     pub block: Box<Expr>,
     pub loop_end: EndExpr,
-}
-
-#[derive(Clone)]
-pub struct LoopConfigExpr {
-    pub left_mustache: InfoToken,
-    pub config: InfoToken,
-    pub right_mustache: InfoToken,
-    pub configs: Vec<LoopConfigOptionExpr>,
-    pub end: EndExpr,
-}
-
-#[derive(Clone)]
-pub struct LoopConfigOptionExpr {
-    pub variable: InfoToken,
-    pub colon: InfoToken,
-    pub value: InfoToken,
-    pub semicolon: InfoToken,
 }
 
 #[derive(Clone)]
@@ -80,7 +62,36 @@ pub struct EndExpr {
 
 #[derive(Clone)]
 pub struct BlockExpr {
+    pub imports: Vec<ImportExpr>,
     pub blocks: Vec<Expr>,
+}
+
+#[derive(Clone)]
+pub struct ImportExpr {
+    pub left_mustache: InfoToken,
+    pub config: InfoToken,
+    pub right_mustache: InfoToken,
+    pub configs: Vec<ImportConfigOptionExpr>,
+    pub end: EndExpr,
+}
+
+impl ImportExpr {
+    pub fn value_of(&self, val: &str) -> Option<String> {
+        for config in &self.configs {
+            if config.variable.slice.trim() == val.trim() {
+                return Some(config.value.slice.clone());
+            }
+        }
+        None
+    }
+}
+
+#[derive(Clone)]
+pub struct ImportConfigOptionExpr {
+    pub variable: InfoToken,
+    pub colon: InfoToken,
+    pub value: InfoToken,
+    pub semicolon: InfoToken,
 }
 
 #[derive(Clone)]

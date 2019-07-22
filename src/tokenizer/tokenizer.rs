@@ -8,8 +8,8 @@ pub enum Token {
     #[regex = "(?i)output"]
     Output,
 
-    #[regex = "(?i)config"]
-    Config,
+    #[regex = "(?i)import"]
+    Import,
 
     #[regex = "(?i)end"]
     End,

@@ -2,17 +2,17 @@ start -> output block
 
 output -> LMUSTACH OUTPUT VARIABLE RMUSTACH
 
-loop -> [loop_config] loop_start block loop_end
-
-loop_config -> LMUSTACH CONFIG RMUSTACH [loop_config_option] LMUSTACH END RMUSTACH
-
-loop_config_option -> VARIABLE COLON anything SEMICOLON
+loop -> loop_start block end_stmt
 
 loop_start -> LMUSTACH LOOP [LPAREN VARIABLE RPAREN] array_accessor [AS VARIABLE] RMUSTACH
 
-loop_end -> LMUSTACH END RMUSTACH
+end_stmt -> LMUSTACH END RMUSTACH
 
-block -> loop | LMUSTACH accessor RMUSTACH | block anything | anything
+block -> loop | LMUSTACH accessor RMUSTACH | block anything | anything | import_stmt* block
+
+import_stmt -> LMUSTACH IMPORT RMUSTACH [import_option] end_stmt
+
+import_option -> VARIABLE COLON anything SEMICOLON
 
 array_accessor -> VARIABLE [ [DOT VARIABLE] [array_bracket] ]* [array_slice]
 

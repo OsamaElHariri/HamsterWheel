@@ -60,11 +60,13 @@ impl<'a> Parser<'a> {
 
     fn block(&mut self) -> Expr {
         let mut blocks: Vec<Expr> = vec![];
+        let mut imports = vec![];
         while self.lexer.info().token != Token::EOF {
             if self.lexer.info().token == Token::LeftMustache {
                 let next_info = self.lexer.peek();
                 match next_info.token {
-                    Token::Loop | Token::Config => blocks.push(self.r#loop()),
+                    Token::Loop => blocks.push(self.r#loop()),
+                    Token::Import => imports.push(self.import_stmt()),
                     Token::End => break,
                     _ => blocks.push(self.mustache_accessor()),
                 };
@@ -73,7 +75,7 @@ impl<'a> Parser<'a> {
             };
         }
 
-        Expr::Block(Box::new(BlockExpr { blocks }))
+        Expr::Block(Box::new(BlockExpr { imports, blocks }))
     }
 
     fn anything(&mut self) -> Expr {
@@ -112,30 +114,23 @@ impl<'a> Parser<'a> {
     }
 
     fn r#loop(&mut self) -> Expr {
-        self.lexer.reset_peek();
-        let info = self.lexer.peek();
-        let configs = match info.token {
-            Token::Config => Some(self.loop_config()),
-            _ => None,
-        };
         Expr::Loop(Box::new(LoopExpr {
-            loop_config: configs,
             loop_start: self.loop_start(),
             block: Box::new(self.block()),
             loop_end: self.loop_end(),
         }))
     }
 
-    fn loop_config(&mut self) -> LoopConfigExpr {
+    fn import_stmt(&mut self) -> ImportExpr {
         let left_mustache = self.consume(Token::LeftMustache);
-        let config = self.consume(Token::Config);
+        let config = self.consume(Token::Import);
         let right_mustache = self.consume(Token::RightMustache);
         let mut configs = vec![];
         while self.lexer.info().token != Token::LeftMustache {
-            configs.push(self.loop_config_option());
+            configs.push(self.import_option());
         }
 
-        LoopConfigExpr {
+        ImportExpr {
             left_mustache,
             config,
             right_mustache,
@@ -144,7 +139,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn loop_config_option(&mut self) -> LoopConfigOptionExpr {
+    fn import_option(&mut self) -> ImportConfigOptionExpr {
         let variable = self.consume(Token::Variable);
         let colon = self.consume(Token::Colon);
         let mut vars = vec![];
@@ -166,7 +161,7 @@ impl<'a> Parser<'a> {
             end: vars.last().expect("non-empty").end,
         };
 
-        LoopConfigOptionExpr {
+        ImportConfigOptionExpr {
             variable,
             colon,
             value: value,
