@@ -10,6 +10,7 @@ pub struct LoopIterator<'a> {
     collection_index: usize,
     collection: VarType,
     loop_variable_name: Option<String>,
+    collection_variable_name: Option<String>,
     as_variable_name: Option<String>,
 }
 
@@ -20,6 +21,7 @@ impl<'a> LoopIterator<'a> {
         min: usize,
         max: usize,
         loop_variable_name: Option<String>,
+        collection_variable_name: Option<String>,
         as_variable_name: Option<String>,
     ) -> LoopIterator<'a> {
         LoopIterator {
@@ -28,6 +30,7 @@ impl<'a> LoopIterator<'a> {
             _start: min,
             end: max,
             loop_variable_name,
+            collection_variable_name,
             as_variable_name,
             collection_index: min,
             loop_index: 0,
@@ -53,6 +56,13 @@ impl<'a> Iterator for LoopIterator<'a> {
 
             if let Some(variable) = &self.loop_variable_name {
                 scope.insert(variable.clone(), VarType::Number(Var::new(self.loop_index)));
+            }
+
+            if let Some(variable) = &self.collection_variable_name {
+                scope.insert(
+                    variable.clone(),
+                    VarType::Number(Var::new(self.collection_index)),
+                );
             }
 
             match &self.collection {

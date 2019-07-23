@@ -85,19 +85,19 @@ impl<'a> Parser<'a> {
         {
             let info = self.lexer.info();
             let mut start = info.start - 1;
-            while self.text.chars().nth(start).expect("").is_whitespace() && start > 0 {
+            while start > 0 && self.text.chars().nth(start).expect("").is_whitespace() {
                 start -= 1
             }
 
-            let mut end = info.end + 1;
-            while self.text.chars().nth(end).expect("").is_whitespace() && end < self.text.len() {
-                end += 1
+            let mut end = info.end;
+            while end < self.text.len() && self.text.chars().nth(end).expect("").is_whitespace() {
+                end += 1;
             }
             tokens.push(InfoToken {
                 token: info.token.clone(),
                 slice: info.slice.clone(),
                 start: start + 1,
-                end: end - 1,
+                end: end,
             });
             self.lexer.advance();
         }
@@ -192,10 +192,25 @@ impl<'a> Parser<'a> {
     }
 
     fn loop_variable(&mut self) -> ParenVariableParenExpr {
+        let left_paren = self.consume(Token::LeftParentheses);
+        let variable = self.consume(Token::Variable);
+        let second_variable = match self.lexer.info().token {
+            Token::Comma => Some(self.comma_variable()),
+            _ => None,
+        };
+
         ParenVariableParenExpr {
-            left_paren: self.consume(Token::LeftParentheses),
-            variable: self.consume(Token::Variable),
+            left_paren,
+            variable,
+            second_variable,
             right_paren: self.consume(Token::RightParentheses),
+        }
+    }
+
+    fn comma_variable(&mut self) -> CommaVariableExpr {
+        CommaVariableExpr {
+            comma: self.consume(Token::Comma),
+            variable: self.consume(Token::Variable),
         }
     }
 

@@ -4,7 +4,7 @@ output -> LMUSTACH OUTPUT VARIABLE RMUSTACH
 
 loop -> loop_start block end_stmt
 
-loop_start -> LMUSTACH LOOP [LPAREN VARIABLE RPAREN] array_accessor [AS VARIABLE] RMUSTACH
+loop_start -> LMUSTACH LOOP [LPAREN VARIABLE [COMMA VARIABLE] RPAREN] array_accessor [AS VARIABLE] RMUSTACH
 
 end_stmt -> LMUSTACH END RMUSTACH
 

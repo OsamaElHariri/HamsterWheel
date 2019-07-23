@@ -116,8 +116,16 @@ impl<'a> Interpreter<'a> {
             None => None,
         };
 
-        let loop_variable_name: Option<String> = match loop_start_expr.loop_variable {
-            Some(loop_variable) => Some(loop_variable.variable.slice),
+        let loop_variable_name: Option<String> = match &loop_start_expr.loop_variable {
+            Some(loop_variable) => Some(loop_variable.variable.slice.clone()),
+            None => None,
+        };
+
+        let collection_variable_name: Option<String> = match loop_start_expr.loop_variable {
+            Some(loop_variable) => match loop_variable.second_variable {
+                Some(second_variable) => Some(second_variable.variable.slice),
+                None => None,
+            },
             None => None,
         };
 
@@ -127,6 +135,7 @@ impl<'a> Interpreter<'a> {
             min,
             max,
             loop_variable_name,
+            collection_variable_name,
             as_variable_name,
         )
     }

@@ -44,7 +44,14 @@ pub struct LoopStartExpr {
 pub struct ParenVariableParenExpr {
     pub left_paren: InfoToken,
     pub variable: InfoToken,
+    pub second_variable: Option<CommaVariableExpr>,
     pub right_paren: InfoToken,
+}
+
+#[derive(Clone)]
+pub struct CommaVariableExpr {
+    pub comma: InfoToken,
+    pub variable: InfoToken,
 }
 
 #[derive(Clone)]

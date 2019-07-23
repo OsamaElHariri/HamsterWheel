@@ -8,3 +8,5 @@ edition = "2018"
 logos = "0.10.0-rc2"
 reqwest = "0.9.19"
 csv = "1.0.0-beta.5"
+walkdir = "2.2.9"
+
