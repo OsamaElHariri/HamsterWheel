@@ -34,18 +34,18 @@ impl FileWalker {
         println!("------------------------------------");
         match output {
             Ok(output) => {
-                FileWalker::write_to_file(output, path.parent())?;
-                println!("Successfully wrote to {}", path.display());
+                let output_file = FileWalker::write_to_file(&output, path.parent())?;
+                println!("Successfully wrote {} to {}", path.display(), output_file,);
             }
             Err(e) => eprintln!("Failed to write to file {}\n{}", path.display(), e.msg),
         };
         Ok(())
     }
 
-    fn write_to_file(
-        interpreter_result: InterpreterResult,
-        hamster_wheel_file_path: Option<&Path>,
-    ) -> Result<(), std::io::Error> {
+    fn write_to_file<'p>(
+        interpreter_result: &'p InterpreterResult,
+        hamster_wheel_file_path: Option<&'p Path>,
+    ) -> Result<String, std::io::Error> {
         let path = Path::new(&interpreter_result.output_file);
         let path_buffer;
         let mut output_path = path;
@@ -58,7 +58,7 @@ impl FileWalker {
 
         let mut file = File::create(&output_path)?;
         file.write_all(interpreter_result.text.as_bytes())?;
-        Ok(())
+        Ok(String::from(output_path.to_string_lossy()))
     }
 }
 
