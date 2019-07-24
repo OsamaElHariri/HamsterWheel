@@ -343,6 +343,7 @@ impl<'a> Parser<'a> {
         if info.token == next {
             let info = info.clone();
             self.lexer.advance();
+            println!("{:?}: {}", info.token, info.slice);
             info.clone()
         } else {
             panic!(

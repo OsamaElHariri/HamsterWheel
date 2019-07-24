@@ -97,9 +97,36 @@ impl<'a> Tokenizer<'a> {
     pub fn info(&mut self) -> &InfoToken {
         if self.peeks.len() > 0 {
             &self.peeks[0]
+        } else if self.get_info_at_lexer().token == Token::Variable {
+            self.advance_handle_variable()
         } else {
             self.get_current_info()
         }
+    }
+
+    fn advance_handle_variable(&mut self) -> &InfoToken {
+        let mut variables = vec![];
+        let mut text = String::from(self.lexer.slice());
+        variables.push(self.get_info_at_lexer());
+        self.lexer.advance();
+        while self.lexer.token == Token::Variable
+            && self.lexer.range().start == variables.last().expect("Variables is empty").end
+        {
+            text = format!("{}{}", text, self.lexer.slice());
+            variables.push(self.get_info_at_lexer());
+            self.lexer.advance();
+        }
+        let end = variables.last().expect("Variables is empty").end;
+        let start = variables.first().expect("Variables is empty").start;
+
+        let info_token = InfoToken {
+            token: Token::Variable,
+            end,
+            start,
+            slice: text,
+        };
+        self.peeks.push(info_token);
+        self.peeks.last().expect("Peeks is empty")
     }
 
     fn get_current_info(&mut self) -> &InfoToken {

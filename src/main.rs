@@ -1,6 +1,5 @@
 use hamster_wheel::interpreter::interpreter::Interpreter;
 use hamster_wheel::interpreter::interpreter_result::InterpreterResult;
-use std::env;
 use std::error::Error;
 use std::fs;
 use std::fs::File;
@@ -12,25 +11,25 @@ fn main() {
     //     let output = Interpreter::new(
     //         "{{ output localization.dart }}
     // {{import}}
-    // name: _localizations;
+    // name: localizations;
     // key: 1JqduyjCwmjKmmyBT0eM7YuD_El2Z_5grafi2hLV8OX4;
     // {{end}}
 
     // class Localized {
     //     static String languageCode = \"en\";
-    // {{Loop _localizations[1, ..] as _localizationRow}}
-    // static String get {{_localizationRow[0]}} {
-    //   {{Loop(i, _collection_index)  _localizations[0][1, ..] as _languageCode }}
-    //     if (languageCode == \"{{_languageCode}}\") return \"{{_localizationRow[_collection_index]}}\";
+    // {{Loop localizations[1, ..] as localizationRow}}
+    // static String get {{localizationRow[0]}} {
+    //   {{Loop(i, collectionIndex)  localizations[0][1, ..] as languageCode }}
+    //     if (languageCode == \"{{languageCode}}\") return \"{{localizationRow[collectionIndex]}}\";
     //   {{End}}
-    //     return \"{{_localizationRow[3]}}\";
+    //     return \"{{localizationRow[3]}}\";
     //   }
     // {{END}}
     // }
     // ",
     //     )
     //     .interpret();
-    //     println!("{}\n output to: {}", output.text, output.output_file);
+        // println!("{}\n output to: {}", output.text, output.output_file);
 
     for entry in WalkDir::new(".") {
         let file = entry.expect("Read path");
