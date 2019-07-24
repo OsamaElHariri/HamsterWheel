@@ -264,8 +264,18 @@ impl<'a> Interpreter<'a> {
     ) -> Result<VarType, InterpreterError> {
         let index = self.visit_array_bracket_index(array_bracket_expr.clone().variable, scope)?;
         match collection {
-            VarType::Table(var) => Ok(VarType::Row(Var::new(var.data[index].clone()))),
-            VarType::Row(var) => Ok(VarType::Value(Var::new(var.data[index].clone()))),
+            VarType::Table(var) => {
+                let mut value = var.data.get(index);
+                let otherwise_value: &Vec<String> = &vec![];
+                let value = value.get_or_insert(otherwise_value);
+                Ok(VarType::Row(Var::new(value.clone())))
+            }
+            VarType::Row(var) => {
+                let mut value = var.data.get(index);
+                let otherwise_value = &String::from("");
+                let value = value.get_or_insert(otherwise_value);
+                Ok(VarType::Value(Var::new(value.clone())))
+            }
             _ => Err(InterpreterError {
                 msg: String::from("Attempt to index a non-iterable"),
                 line_number: self
@@ -379,12 +389,3 @@ impl From<InterpreterError> for GeneralError {
         }
     }
 }
-
-// impl From<ScopeError> for InterpreterError {
-//     fn from(error: ScopeError) -> Self {
-//         InterpreterError {
-//             msg: format!("{}", error),
-//             line_number: 0,
-//         }
-//     }
-// }

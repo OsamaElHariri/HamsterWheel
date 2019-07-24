@@ -1,6 +1,6 @@
 pub struct FileWalker;
-use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::interpreter::GeneralError;
+use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::interpreter_result::InterpreterResult;
 use std::error::Error;
 use std::fs;
@@ -19,29 +19,34 @@ impl FileWalker {
                     if extension != "hamster_wheel" {
                         continue;
                     }
-                    let file_content = fs::read_to_string(path.canonicalize().unwrap()).expect(
-                        &format!("Something went wrong reading the file {}", path.display()),
-                    );
-
-                    let output = Interpreter::new(&file_content).interpret();
-                    println!("------------------------------------");
-                    match output {
-                        Ok(output) => {
-                            FileWalker::write_to_file(output, path.parent());
-                            println!("Successfully wrote to {}", path.display());
-                        }
-                        Err(e) => eprintln!("Failed to write to file {}\n{}", path.display(), e.msg),
-                    };
-                    println!("------------------------------------");
+                    if let Err(e) = FileWalker::handle_file(path) {
+                        eprintln!("{}", e);
+                    }
                 }
             }
         }
+        println!("------------------------------------");
+    }
+
+    fn handle_file(path: &Path) -> Result<(), GeneralError> {
+        let file_content = fs::read_to_string(path.canonicalize()?)?;
+
+        let output = Interpreter::new(&file_content).interpret();
+        println!("------------------------------------");
+        match output {
+            Ok(output) => {
+                FileWalker::write_to_file(output, path.parent())?;
+                println!("Successfully wrote to {}", path.display());
+            }
+            Err(e) => eprintln!("Failed to write to file {}\n{}", path.display(), e.msg),
+        };
+        Ok(())
     }
 
     fn write_to_file(
         interpreter_result: InterpreterResult,
         hamster_wheel_file_path: Option<&Path>,
-    ) {
+    ) -> Result<(), std::io::Error> {
         let path = Path::new(&interpreter_result.output_file);
         let path_buffer;
         let mut output_path = path;
@@ -52,14 +57,16 @@ impl FileWalker {
             }
         }
 
-        let display = path.display();
-        let mut file = match File::create(&output_path) {
-            Err(why) => panic!("couldn't create {}: {}", display, why.description()),
-            Ok(file) => file,
-        };
-        match file.write_all(interpreter_result.text.as_bytes()) {
-            Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
-            Ok(_) => println!("successfully wrote to {}", display),
-        };
+        let mut file = File::create(&output_path)?;
+        file.write_all(interpreter_result.text.as_bytes())?;
+        Ok(())
+    }
+}
+
+impl From<std::io::Error> for GeneralError {
+    fn from(error: std::io::Error) -> Self {
+        GeneralError {
+            msg: format!("{}", error),
+        }
     }
 }
