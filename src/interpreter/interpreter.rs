@@ -4,7 +4,6 @@ use crate::interpreter::loop_iterator::LoopIterator;
 use crate::parser::parser::ParseError;
 use crate::parser::parser::Parser;
 use crate::parser::scope::Scope;
-use crate::parser::scope::ScopeError;
 use crate::parser::var_type::Var;
 use crate::parser::var_type::VarType;
 use crate::tokenizer::tokenizer::InfoToken;
@@ -156,8 +155,8 @@ impl<'a> Interpreter<'a> {
         };
 
         match &variable {
-            VarType::Table(var) => (),
-            VarType::Row(var) => (),
+            VarType::Table(_var) => (),
+            VarType::Row(_var) => (),
             _ => {
                 return Err(InterpreterError {
                     msg: String::from("Attempt to loop on a non-iterable"),
@@ -208,7 +207,7 @@ impl<'a> Interpreter<'a> {
         collection: &VarType,
     ) -> Result<(usize, usize), InterpreterError> {
         let mut min_index = 0;
-        let mut max_index = 0;
+        let mut _max_index = 0;
         match array_slice {
             Some(array_slice) => match collection {
                 VarType::Table(var) => {
@@ -216,7 +215,7 @@ impl<'a> Interpreter<'a> {
                         Token::DoubleDot => 0,
                         _ => self.get_number_from_token(scope, array_slice.start_index.token)?,
                     };
-                    max_index = match array_slice.end_index.token.token {
+                    _max_index = match array_slice.end_index.token.token {
                         Token::DoubleDot => var.data.len(),
                         _ => self.get_number_from_token(scope, array_slice.end_index.token)?,
                     };
@@ -226,7 +225,7 @@ impl<'a> Interpreter<'a> {
                         Token::DoubleDot => 0,
                         _ => self.get_number_from_token(scope, array_slice.start_index.token)?,
                     };
-                    max_index = match array_slice.end_index.token.token {
+                    _max_index = match array_slice.end_index.token.token {
                         Token::DoubleDot => var.data.len(),
                         _ => self.get_number_from_token(scope, array_slice.end_index.token)?,
                     };
@@ -240,10 +239,10 @@ impl<'a> Interpreter<'a> {
             },
             None => match collection {
                 VarType::Table(var) => {
-                    max_index = var.data.len();
+                    _max_index = var.data.len();
                 }
                 VarType::Row(var) => {
-                    max_index = var.data.len();
+                    _max_index = var.data.len();
                 }
                 _ => {
                     return Err(InterpreterError {
@@ -253,7 +252,7 @@ impl<'a> Interpreter<'a> {
                 }
             },
         };
-        Ok((min_index, max_index))
+        Ok((min_index, _max_index))
     }
 
     fn visit_array_bracket(

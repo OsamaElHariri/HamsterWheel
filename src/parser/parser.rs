@@ -3,7 +3,6 @@ use crate::tokenizer::tokenizer::Token;
 use crate::tokenizer::tokenizer::Tokenizer;
 use crate::tree_nodes::tree_nodes::*;
 use std::fmt;
-use std::fmt::{Debug, Display};
 
 pub struct Parser<'a> {
     pub text: &'a str,

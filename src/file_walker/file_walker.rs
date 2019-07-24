@@ -2,7 +2,6 @@ pub struct FileWalker;
 use crate::interpreter::interpreter::GeneralError;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::interpreter_result::InterpreterResult;
-use std::error::Error;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
@@ -10,7 +9,7 @@ use std::path::Path;
 use walkdir::WalkDir;
 
 impl FileWalker {
-    pub fn walk_directory(path: String) {
+    pub fn walk_directory(_path: String) {
         for entry in WalkDir::new(".") {
             let file = entry.expect("Read path");
             let path = file.path();
