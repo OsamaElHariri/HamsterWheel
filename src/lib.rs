@@ -2,3 +2,4 @@ pub mod tokenizer;
 pub mod tree_nodes;
 pub mod parser;
 pub mod interpreter;
+pub mod file_walker;

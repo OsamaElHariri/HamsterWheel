@@ -1,5 +1,6 @@
 use crate::parser::var_type::VarType;
 use std::collections::HashMap;
+use std::fmt;
 
 pub struct Scope<'a> {
     pub parent: Option<&'a Scope<'a>>,
@@ -29,9 +30,14 @@ impl<'a> Scope<'a> {
         self.vars.insert(key, var)
     }
 
-    pub fn lookup(&self, key: &String) -> &VarType {
+    pub fn lookup(&self, key: &String) -> Result<&VarType, ScopeError> {
         let query = self.query(key);
-        query.expect(&format!("Attempted to use undeclared variable {}", key))
+        match query {
+            Some(val) => Ok(val),
+            None => Err(ScopeError {
+                msg: format!("Attempted to use undeclared variable {}", key),
+            }),
+        }
     }
 
     pub fn query(&self, key: &String) -> Option<&VarType> {
@@ -44,5 +50,21 @@ impl<'a> Scope<'a> {
                 None
             }
         }
+    }
+}
+
+pub struct ScopeError {
+    msg: String,
+}
+
+impl fmt::Display for ScopeError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.msg)
+    }
+}
+
+impl fmt::Debug for ScopeError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{{ file: {}, line: {} }}", file!(), line!())
     }
 }
