@@ -1,4 +1,5 @@
 pub struct FileWalker;
+use crate::interpreter::importer::Importer;
 use crate::interpreter::interpreter::GeneralError;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::interpreter_result::InterpreterResult;
@@ -10,6 +11,7 @@ use walkdir::WalkDir;
 
 impl FileWalker {
     pub fn walk_directory(_path: String) {
+        let mut importer = Importer::new(Path::new(".").to_path_buf());
         for entry in WalkDir::new(".") {
             let file = entry.expect("Read path");
             let path = file.path();
@@ -18,7 +20,8 @@ impl FileWalker {
                     if extension != "hamster_wheel" {
                         continue;
                     }
-                    if let Err(e) = FileWalker::handle_file(path) {
+
+                    if let Err(e) = FileWalker::handle_file(path, &mut importer) {
                         eprintln!("{}", e);
                     }
                 }
@@ -27,10 +30,12 @@ impl FileWalker {
         println!("------------------------------------");
     }
 
-    fn handle_file(path: &Path) -> Result<(), GeneralError> {
-        let file_content = fs::read_to_string(path.canonicalize()?)?;
-
-        let output = Interpreter::new(&file_content).interpret();
+    fn handle_file(path: &Path, importer: &mut Importer) -> Result<(), GeneralError> {
+        let canonical = path.canonicalize()?;
+        let parent_path = path.parent().unwrap();
+        let file_content = fs::read_to_string(canonical)?;
+        importer.current_directory = parent_path.to_path_buf();
+        let output = Interpreter::new(&file_content, importer).interpret();
         println!("------------------------------------");
         match output {
             Ok(output) => {

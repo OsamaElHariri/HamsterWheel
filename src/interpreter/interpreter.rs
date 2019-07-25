@@ -15,14 +15,16 @@ pub struct Interpreter<'a> {
     pub text: &'a str,
     parser: Parser<'a>,
     output_file: String,
+    importer: &'a mut Importer,
 }
 
 impl<'a> Interpreter<'a> {
-    pub fn new(text: &str) -> Interpreter {
+    pub fn new(text: &'a str, importer: &'a mut Importer) -> Interpreter<'a> {
         Interpreter {
             text,
             parser: Parser::new(text),
             output_file: String::from(""),
+            importer,
         }
     }
 
@@ -66,7 +68,7 @@ impl<'a> Interpreter<'a> {
         let exprs = block_expr.blocks;
         let mut strings: Vec<String> = vec![];
 
-        Importer::update_scope(scope, block_expr.imports);
+        self.importer.update_scope(scope, block_expr.imports);
 
         for expr in exprs {
             let mut child_scope = Scope::with_parent(scope);

@@ -355,9 +355,11 @@ impl<'a> Parser<'a> {
             Ok(info.clone())
         } else {
             Err(ParseError {
-                msg: format!("Expected {:?}, found {:?}.\nCurrent slice reads {}.\n The slice runs from {} to {}",
-                 next, info.token, info.slice, info.start, info.end),
-                 line_number: self.current_line,
+                msg: format!(
+                    "Expected {:?}, found {:?}.\nCurrent slice reads {}.",
+                    next, info.token, info.slice
+                ),
+                line_number: self.current_line,
             })
         }
     }
