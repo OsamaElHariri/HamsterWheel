@@ -1,8 +1,10 @@
 [package]
 name = "hamster_wheel"
 version = "0.1.0"
-authors = ["OsamaElHariri <ose05@mail.aub.edu>"]
+authors = ["OsamaElHariri <yamsandbread@gmail.com>"]
 edition = "2018"
+description = "Looping code generator that allows for generating code over a collection"
+license = "MIT"
 
 [dependencies]
 logos = "0.10.0-rc2"

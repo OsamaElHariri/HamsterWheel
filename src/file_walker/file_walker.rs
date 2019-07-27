@@ -10,9 +10,14 @@ use std::path::Path;
 use walkdir::WalkDir;
 
 impl FileWalker {
-    pub fn walk_directory(_path: String) {
-        let mut importer = Importer::new(Path::new(".").to_path_buf());
-        for entry in WalkDir::new(".") {
+    pub fn walk_directory_from_string(path: String) {
+        FileWalker::walk_directory(Path::new(&path));
+    }
+
+    pub fn walk_directory(path: &Path) {
+        let mut importer = Importer::new(path.to_path_buf());
+        println!("Running in {}", path.display());
+        for entry in WalkDir::new(path) {
             let file = entry.expect("Read path");
             let path = file.path();
             if path.is_file() {

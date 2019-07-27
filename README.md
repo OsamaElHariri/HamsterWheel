@@ -2,8 +2,8 @@
 Hamster wheel is a looping code generator. Generate any text you'd like by specifying some collections and a .hamster_wheel file.
 
 # Usage
-Include in your project
-```npm install hamster_wheel```
+Install the Rust crate
+```cargo install hamster_wheel```
 Then run the command ```hamster_wheel```, and all the .hamster_wheel files in you directory and subdirectories will be processed.
 
 # Templates
