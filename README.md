@@ -29,11 +29,11 @@ key: 123abc123abc123abc123;
 ```
 
 In order for a file to be processed successfully, it must have:
-+ The .hamster_wheel extension
-+ A specified output file
-+ Imports that define collections
-+ Loops over the collections
-+ Accessors to access the collections
+1. The .hamster_wheel extension
+2. A specified output file
+3. Imports that define collections
+4. Loops over the collections
+5. Accessors to access the collections
 
 These are described below.
 
@@ -109,9 +109,9 @@ Example with slicing:
 ```
 
 You can put the following information in your scope for use inside the loop by assigning variable names to them:
-+ The loop index: This always starts at zero, and increases by one on each iteration.
-+ The collection index: This is the index that is currently being used to access the collection. Meaning if you are looping on ```yourCollection[5, ..]``` the collection index starts at 5, and increases by one on each iteration.
-+ The current item: This is simply ```yourCollection[collectionIndex]```.
+1. The loop index: This always starts at zero, and increases by one on each iteration.
+2. The collection index: This is the index that is currently being used to access the collection. Meaning if you are looping on ```yourCollection[5, ..]``` the collection index starts at 5, and increases by one on each iteration.
+3. The current item: This is simply ```yourCollection[collectionIndex]```.
 
 You can assign them to variables using the following syntax
 ```
