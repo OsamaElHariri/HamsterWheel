@@ -1,7 +1,7 @@
+![picture](media/logo.png)
+
 # Hamster Wheel
 Hamster wheel is a looping code generator. Generate any text you'd like by specifying some collections and a .hamster_wheel file.
-
-![picture](media/logo.png)
 
 # Usage
 Install the Rust crate
@@ -12,12 +12,28 @@ Then run the command ```hamster_wheel```, and all the .hamster_wheel files in yo
 Included in ```/templates``` directory are some template files for doing various things in various programming languages. One of the main motivators for Hamster Wheel is to easily generate localization sheets, and so some templates for that are included. If there is something you need to generate and a template is not provided, read on to discover how you can write your own .hamster_wheel files.
 
 # Creating a .hamster_wheel file
+
+An example of a complete file
+```
+{{ OUTPUT your/output_file.js }}
+{{ IMPORT }}
+name: yourCollection;
+key: 123abc123abc123abc123;
+{{ END }}
+{{ LOOP(parentIndex) yourCollection as currentRow }}
+    Parent Loop number {{ parentIndex }}!
+    {{ LOOP currentRow as currentItem }}
+        Item: {{ currentItem }}
+    {{ END }}
+{{ END }}
+```
+
 In order for a file to be processed successfully, it must have:
-- The .hamster_wheel extension
-- A specified output file
-- Imports that define collections
-- Loops over the collections
-- Accessors to access the collections
+* The .hamster_wheel extension
+* A specified output file
+* Imports that define collections
+* Loops over the collections
+* Accessors to access the collections
 
 These are described below.
 
@@ -43,7 +59,7 @@ or from Google Sheets
 ```
 {{ IMPORT }}
 name: yourOtherVariable;
-key: 34iuhd_34ifb34f-13jfbjhewf-wqejfbewh;
+key: 123abc123abc123abc123;
 {{ END }}
 ```
 
@@ -93,9 +109,9 @@ Example with slicing:
 ```
 
 You can put the following information in your scope for use inside the loop by assigning variable names to them:
-- The loop index: This always starts at zero, and increases by one on each iteration.
-- The collection index: This is the index that is currently being used to access the collection. Meaning if you are looping on ```yourCollection[5, ..]``` the collection index starts at 5, and increases by one on each iteration.
-- The current item: This is simply ```yourCollection[collectionIndex]```.
+* The loop index: This always starts at zero, and increases by one on each iteration.
+* The collection index: This is the index that is currently being used to access the collection. Meaning if you are looping on ```yourCollection[5, ..]``` the collection index starts at 5, and increases by one on each iteration.
+* The current item: This is simply ```yourCollection[collectionIndex]```.
 
 You can assign them to variables using the following syntax
 ```
