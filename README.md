@@ -1,6 +1,8 @@
 # Hamster Wheel
 Hamster wheel is a looping code generator. Generate any text you'd like by specifying some collections and a .hamster_wheel file.
 
+![N|Solid](https://bitbucket.org/thethoughtpalette/hamsterwheel/src/master/media/logo.png)
+
 # Usage
 Install the Rust crate
 ```cargo install hamster_wheel```
