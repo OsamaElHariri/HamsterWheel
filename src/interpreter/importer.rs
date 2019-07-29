@@ -39,6 +39,14 @@ impl Importer {
         }
     }
 
+    pub fn update_with_file(&mut self,scope: &mut Scope, variable_name: String, filename: String) {
+        scope.insert(variable_name, VarType::Table(Var::new(self.get_from_file(filename))));
+    }
+
+    pub fn update_with_sheet(&mut self,scope: &mut Scope, variable_name:String , sheet_id: String) {
+        scope.insert(variable_name, VarType::Table(Var::new(self.get_google_sheet(sheet_id))));
+    }
+
     fn get_from_file(&mut self, filename: String) -> Vec<Vec<String>> {
         let mut records = vec![];
         let path = Path::new(&filename);

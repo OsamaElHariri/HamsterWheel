@@ -6,7 +6,7 @@ Hamster wheel is a looping code generator. Generate any text you'd like by speci
 # Usage
 Install the Rust crate
 ```cargo install hamster_wheel```
-Then run the command ```hamster_wheel```, and all the .hamster_wheel files in you directory and subdirectories will be processed.
+Then run the command ```hamster_wheel```, and all the .hamster_wheel files in you directory and subdirectories will be interpreted.
 
 # Templates
 Included in ```/templates``` directory are some template files for doing various things in various programming languages. One of the main motivators for Hamster Wheel is to easily generate localization sheets, and so some templates for that are included. If there is something you need to generate and a template is not provided, read on to discover how you can write your own .hamster_wheel files.
@@ -28,7 +28,7 @@ key: 123abc123abc123abc123;
 {{ END }}
 ```
 
-In order for a file to be processed successfully, it must have:
+In order for a file to be interpreted successfully, it must have:
 1. The .hamster_wheel extension
 2. A specified output file
 3. Imports that define collections
@@ -77,6 +77,19 @@ name: yourVariableName;
 path: you/input_file.csv;
 {{ END }}
 ```
+
+An alternative method to import collections is from the cli.
+You can import a collection from a file from the command line as follows:
+```
+hamster_wheel file variableName ./my/file.csv
+```
+
+You can import a collection from Google Sheets from the command line as follows:
+```
+hamster_wheel sheet variableName 123abc123abc123abc123
+```
+
+Then you can use the variable in all the .hamster_wheel files that will get interpreted.
 
 The imports define the variable in the current scope, where a scope is usually defined by a Loop.
 

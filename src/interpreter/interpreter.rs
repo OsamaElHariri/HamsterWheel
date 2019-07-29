@@ -28,42 +28,41 @@ impl<'a> Interpreter<'a> {
         }
     }
 
-    pub fn interpret(&mut self) -> Result<InterpreterResult, GeneralError> {
+    pub fn interpret(&mut self, base_scope: &mut Scope) -> Result<InterpreterResult, GeneralError> {
         let expr = self.parser.parse()?;
-        let mut base_scope = Scope::new();
         Ok(InterpreterResult {
-            text: self.visit_expr(expr, &mut base_scope)?,
+            text: self.visit_expr(base_scope, expr)?,
             output_file: self.output_file.clone(),
         })
     }
 
     pub fn visit_expr(
         &mut self,
-        expr: Expr,
         scope: &mut Scope,
+        expr: Expr,
     ) -> Result<String, InterpreterError> {
         match expr {
-            Expr::Start(node) => self.visit_start(node, scope),
+            Expr::Start(node) => self.visit_start(scope, node),
             Expr::Anything(node) => Ok(self.visit_anything(node)),
-            Expr::Block(node) => self.visit_block(node, scope),
-            Expr::MustacheAccessor(node) => self.visit_mustache_accessor(node, scope),
-            Expr::Loop(node) => self.visit_loop(node, scope),
+            Expr::Block(node) => self.visit_block(scope, node),
+            Expr::MustacheAccessor(node) => self.visit_mustache_accessor(scope, node),
+            Expr::Loop(node) => self.visit_loop(scope, node),
         }
     }
 
     fn visit_start(
         &mut self,
-        start_expr: Box<StartExpr>,
         scope: &mut Scope,
+        start_expr: Box<StartExpr>,
     ) -> Result<String, InterpreterError> {
         self.output_file = start_expr.output.file_path.slice;
-        self.visit_expr(start_expr.expr, scope)
+        self.visit_expr(scope, start_expr.expr)
     }
 
     fn visit_block(
         &mut self,
-        block_expr: Box<BlockExpr>,
         scope: &mut Scope,
+        block_expr: Box<BlockExpr>,
     ) -> Result<String, InterpreterError> {
         let exprs = block_expr.blocks;
         let mut strings: Vec<String> = vec![];
@@ -72,7 +71,7 @@ impl<'a> Interpreter<'a> {
 
         for expr in exprs {
             let mut child_scope = Scope::with_parent(scope);
-            strings.push(self.visit_expr(expr, &mut child_scope)?);
+            strings.push(self.visit_expr(&mut child_scope, expr)?);
         }
         Ok(strings.join(""))
     }
@@ -89,20 +88,20 @@ impl<'a> Interpreter<'a> {
 
     fn visit_mustache_accessor(
         &mut self,
-        mustache_accessor_expr: MustacheAccessorExpr,
         scope: &mut Scope,
+        mustache_accessor_expr: MustacheAccessorExpr,
     ) -> Result<String, InterpreterError> {
-        self.visit_accessor(mustache_accessor_expr.accessor, scope)
+        self.visit_accessor(scope, mustache_accessor_expr.accessor)
     }
 
     fn visit_accessor(
         &mut self,
-        accessor_expr: AccessorExpr,
         scope: &mut Scope,
+        accessor_expr: AccessorExpr,
     ) -> Result<String, InterpreterError> {
         let mut variable = self.lookup(scope, accessor_expr.variable.clone())?.clone();
         for indexer in accessor_expr.indexes {
-            variable = self.visit_array_bracket(indexer, scope, variable)?;
+            variable = self.visit_array_bracket(scope, indexer, variable)?;
         }
 
         match variable {
@@ -117,14 +116,14 @@ impl<'a> Interpreter<'a> {
 
     fn visit_loop(
         &mut self,
-        loop_expr: Box<LoopExpr>,
         scope: &mut Scope,
+        loop_expr: Box<LoopExpr>,
     ) -> Result<String, InterpreterError> {
         let mut strings: Vec<String> = vec![];
-        let loop_iterator = self.visit_loop_start(loop_expr.loop_start, scope)?;
+        let loop_iterator = self.visit_loop_start(scope, loop_expr.loop_start)?;
 
         for mut scope in loop_iterator {
-            let output = self.visit_expr(*loop_expr.block.clone(), &mut scope)?;
+            let output = self.visit_expr(&mut scope, *loop_expr.block.clone())?;
             strings.push(output);
         }
 
@@ -133,11 +132,11 @@ impl<'a> Interpreter<'a> {
 
     fn visit_loop_start<'b>(
         &mut self,
-        loop_start_expr: LoopStartExpr,
         scope: &'b mut Scope,
+        loop_start_expr: LoopStartExpr,
     ) -> Result<LoopIterator<'b>, InterpreterError> {
         let (variable, min, max) =
-            self.visit_array_accessor(loop_start_expr.array_accessor.clone(), scope)?;
+            self.visit_array_accessor(scope, loop_start_expr.array_accessor.clone())?;
         let as_variable_name: Option<String> = match loop_start_expr.as_variable {
             Some(as_variable) => Some(as_variable.variable.slice),
             None => None,
@@ -181,20 +180,20 @@ impl<'a> Interpreter<'a> {
 
     fn visit_array_accessor(
         &mut self,
-        array_accessor_expr: ArrayAccessorExpr,
         scope: &mut Scope,
+        array_accessor_expr: ArrayAccessorExpr,
     ) -> Result<(VarType, usize, usize), InterpreterError> {
         let mut variable = self
             .lookup(scope, array_accessor_expr.variable.clone())?
             .clone();
         for indexer in array_accessor_expr.indexes {
-            variable = self.visit_array_bracket(indexer, scope, variable)?;
+            variable = self.visit_array_bracket(scope, indexer, variable)?;
         }
 
         let (min, max) = self.visit_array_slice(
+            scope,
             array_accessor_expr.variable,
             array_accessor_expr.array_slice,
-            scope,
             &variable,
         )?;
 
@@ -203,9 +202,9 @@ impl<'a> Interpreter<'a> {
 
     fn visit_array_slice(
         &mut self,
+        scope: &mut Scope,
         variable_info_token: InfoToken,
         array_slice: Option<ArraySliceExpr>,
-        scope: &mut Scope,
         collection: &VarType,
     ) -> Result<(usize, usize), InterpreterError> {
         let mut min_index = 0;
@@ -259,11 +258,11 @@ impl<'a> Interpreter<'a> {
 
     fn visit_array_bracket(
         &mut self,
-        array_bracket_expr: ArrayBracketExpr,
         scope: &mut Scope,
+        array_bracket_expr: ArrayBracketExpr,
         collection: VarType,
     ) -> Result<VarType, InterpreterError> {
-        let index = self.visit_array_bracket_index(array_bracket_expr.clone().variable, scope)?;
+        let index = self.visit_array_bracket_index(scope, array_bracket_expr.clone().variable)?;
         match collection {
             VarType::Table(var) => {
                 let mut value = var.data.get(index);
@@ -287,8 +286,8 @@ impl<'a> Interpreter<'a> {
 
     fn visit_array_bracket_index(
         &mut self,
-        array_bracket_index_expr: ArrayBracketIndexExpr,
         scope: &mut Scope,
+        array_bracket_index_expr: ArrayBracketIndexExpr,
     ) -> Result<usize, InterpreterError> {
         self.get_number_from_token(scope, array_bracket_index_expr.token)
     }

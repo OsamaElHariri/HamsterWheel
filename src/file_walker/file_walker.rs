@@ -1,4 +1,5 @@
 pub struct FileWalker;
+use crate::parser::scope::Scope;
 use crate::interpreter::importer::Importer;
 use crate::interpreter::interpreter::GeneralError;
 use crate::interpreter::interpreter::Interpreter;
@@ -14,7 +15,12 @@ impl FileWalker {
         FileWalker::walk_directory(Path::new(&path));
     }
 
+    
     pub fn walk_directory(path: &Path) {
+        FileWalker::walk_directory_with_scope(path, &mut Scope::new());
+    }
+
+    pub fn walk_directory_with_scope(path: &Path, scope: &mut Scope) {
         let mut importer = Importer::new(path.to_path_buf());
         println!("Running in {}", path.display());
         for entry in WalkDir::new(path) {
@@ -26,7 +32,7 @@ impl FileWalker {
                         continue;
                     }
 
-                    if let Err(e) = FileWalker::handle_file(path, &mut importer) {
+                    if let Err(e) = FileWalker::handle_file(path, &mut importer, scope) {
                         eprintln!("{}", e);
                     }
                 }
@@ -35,12 +41,13 @@ impl FileWalker {
         println!("------------------------------------");
     }
 
-    fn handle_file(path: &Path, importer: &mut Importer) -> Result<(), GeneralError> {
+
+    fn handle_file(path: &Path, importer: &mut Importer, scope: &mut Scope) -> Result<(), GeneralError> {
         let canonical = path.canonicalize()?;
         let parent_path = path.parent().unwrap();
         let file_content = fs::read_to_string(canonical)?;
         importer.current_directory = parent_path.to_path_buf();
-        let output = Interpreter::new(&file_content, importer).interpret();
+        let output = Interpreter::new(&file_content, importer).interpret(scope);
         println!("------------------------------------");
         match output {
             Ok(output) => {
