@@ -1,6 +1,6 @@
 [package]
 name = "hamster_wheel"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["OsamaElHariri <yamsandbread@gmail.com>"]
 edition = "2018"
 description = "Looping code generator that allows for generating code over a collection"

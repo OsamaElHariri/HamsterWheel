@@ -7,7 +7,7 @@ use clap::{App, Arg, SubCommand};
 
 fn main() {
     let matches = App::new("HamsterWheel")
-        .version("0.2.0")
+        .version("0.2.1")
         .author("OsamaElHariri <yamsandbread@gmail.com>")
         .about("Looping code generator that allows for generating code over a collection")
         .subcommand(
