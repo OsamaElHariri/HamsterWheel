@@ -11,6 +11,7 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
+    /// Construct a new `Parser` with source text
     pub fn new(text: &'a str) -> Parser {
         Parser {
             text,
@@ -19,6 +20,7 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Parse this `Parser`'s source text
     pub fn parse(&mut self) -> Result<Expr, ParseError> {
         self.start()
     }

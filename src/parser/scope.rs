@@ -8,6 +8,7 @@ pub struct Scope<'a> {
 }
 
 impl<'a> Scope<'a> {
+    /// Construct a new `Scope`
     pub fn new() -> Scope<'a> {
         Scope {
             parent: None,
@@ -15,6 +16,7 @@ impl<'a> Scope<'a> {
         }
     }
 
+    /// Construct a new `Scope` that has a parent
     pub fn with_parent(parent: &'a Scope) -> Scope<'a> {
         Scope {
             parent: Some(parent),
@@ -22,14 +24,19 @@ impl<'a> Scope<'a> {
         }
     }
 
+    /// Set this `Scope`'s parent
     pub fn set_parent(&mut self, parent: &'a Scope) {
         self.parent = Some(parent);
     }
 
+    /// Insert a new value into this scope
     pub fn insert(&mut self, key: String, var: VarType) -> Option<VarType> {
         self.vars.insert(key, var)
     }
 
+    /// Lookup a value in this `Scope`, if not found keep looking in this
+    /// `Scope`'s ancestors for the value.
+    /// Return Err if the value is not found
     pub fn lookup(&self, key: &String) -> Result<&VarType, ScopeError> {
         let query = self.query(key);
         match query {
@@ -40,7 +47,7 @@ impl<'a> Scope<'a> {
         }
     }
 
-    pub fn query(&self, key: &String) -> Option<&VarType> {
+    fn query(&self, key: &String) -> Option<&VarType> {
         if let Some(var) = self.vars.get(key) {
             Some(var)
         } else {

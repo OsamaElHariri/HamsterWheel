@@ -79,6 +79,7 @@ pub struct Tokenizer<'a> {
 }
 
 impl<'a> Tokenizer<'a> {
+    /// Construct a new `Tokenizer` with source text
     pub fn new(text: &'a str) -> Tokenizer {
         let lexer = Token::lexer(text);
         Tokenizer {
@@ -94,6 +95,7 @@ impl<'a> Tokenizer<'a> {
         }
     }
 
+    /// Return the information of the `Token` that this `Tokenizer` is current;y sitting on
     pub fn info(&mut self) -> &InfoToken {
         if self.peeks.len() > 0 {
             &self.peeks[0]
@@ -143,8 +145,9 @@ impl<'a> Tokenizer<'a> {
         }
     }
 
+    /// Advance this `Tokenizer` to sit on the next `Token`
     pub fn advance(&mut self) {
-        self.reset_peek();
+        self.peek_index = 1;
         if self.peeks.len() == 0 {
             self.lexer.advance();
         } else {
@@ -152,6 +155,11 @@ impl<'a> Tokenizer<'a> {
         }
     }
 
+    /// Keep this `Tokenizer` sitting where it is, but return the next token.
+    /// Calling peek multiple times in succession will return the token that is
+    /// after the last peek. For example, if there is Token1, Token2, and Token3,
+    /// and we are currently sitting on Token1, the first peek() returns Token2,
+    /// and the second peek() returns Token3
     pub fn peek(&mut self) -> &InfoToken {
         let current_peek_index = self.peek_index;
         self.peek_index += 1;
@@ -164,10 +172,6 @@ impl<'a> Tokenizer<'a> {
             self.lexer.advance();
             self.get_current_info()
         }
-    }
-
-    pub fn reset_peek(&mut self) {
-        self.peek_index = 1;
     }
 }
 

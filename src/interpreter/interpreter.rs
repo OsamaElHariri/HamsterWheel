@@ -19,6 +19,7 @@ pub struct Interpreter<'a> {
 }
 
 impl<'a> Interpreter<'a> {
+    /// Construct a new `Interpreter` with a source text and an `Importer`
     pub fn new(text: &'a str, importer: &'a mut Importer) -> Interpreter<'a> {
         Interpreter {
             text,
@@ -28,6 +29,7 @@ impl<'a> Interpreter<'a> {
         }
     }
 
+    /// Interpet this `Interpreter`'s source text using the given `Scope` as a base
     pub fn interpret(&mut self, base_scope: &mut Scope) -> Result<InterpreterResult, GeneralError> {
         let expr = self.parser.parse()?;
         Ok(InterpreterResult {
@@ -36,11 +38,7 @@ impl<'a> Interpreter<'a> {
         })
     }
 
-    pub fn visit_expr(
-        &mut self,
-        scope: &mut Scope,
-        expr: Expr,
-    ) -> Result<String, InterpreterError> {
+    fn visit_expr(&mut self, scope: &mut Scope, expr: Expr) -> Result<String, InterpreterError> {
         match expr {
             Expr::Start(node) => self.visit_start(scope, node),
             Expr::Anything(node) => Ok(self.visit_anything(node)),
