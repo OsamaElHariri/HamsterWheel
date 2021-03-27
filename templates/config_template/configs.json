@@ -1,0 +1,27 @@
+
+{
+    
+    "dev": {
+        
+        "PORT": "3000", 
+        "USER": "dev_user", 
+        "PASSWORD": "12345",
+        "ENV": "dev"
+    },
+     
+    "prod": {
+        
+        "PORT": "8080", 
+        "USER": "user", 
+        "PASSWORD": "super_strong_pass_54321",
+        "ENV": "prod"
+    },
+    
+    "config_keys": [
+    
+    "PORT", 
+    "USER", 
+    "PASSWORD",
+    "ENV"
+    ]
+}

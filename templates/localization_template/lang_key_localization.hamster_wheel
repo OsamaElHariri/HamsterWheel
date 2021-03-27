@@ -1,0 +1,14 @@
+{{ OUTPUT output_lang_key.js }}
+{{ IMPORT }}
+name: localizations;
+path: localizations.csv;
+{{ END }}
+export let localizations = {
+    {{ LOOP(currentLoopIndex, currentIndex) localizations[0][1, ..] as locale }}
+    "{{locale}}": {
+        {{ LOOP localizations[1, ..] as currentItem }}
+        "{{currentItem[0]}}": "{{currentItem[currentIndex]}}",{{ END }}
+
+    },
+    {{ END }}
+}

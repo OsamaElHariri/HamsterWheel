@@ -1,0 +1,19 @@
+{{ OUTPUT configs.json }}
+{{ IMPORT }}
+name: configs;
+path: configs.csv;
+{{ END }}
+{
+    {{ LOOP(currentLoopIndex, currentIndex) configs[0][1, ..] as env }}
+    "{{env}}": {
+        {{ LOOP configs[1, ..] as currentItem }}
+        "{{currentItem[0]}}": "{{currentItem[currentIndex]}}",{{ END }}
+        "ENV": "{{env}}"
+    },
+    {{ END }}
+    "config_keys": [
+    {{ LOOP configs[1, ..] as currentItem }}
+    "{{currentItem[0]}}",{{ END }}
+    "ENV"
+    ]
+}
