@@ -1,5 +1,6 @@
-![picture](media/logo.png)
-
+<p align="center">
+  <img src="media/logo.png" alt="Hamster Wheel" />
+</p>
 # Hamster Wheel
 Hamster wheel is a looping code generator. Generate any text you'd like by specifying some collections and a .hamster_wheel file.
 
@@ -128,11 +129,11 @@ You can put the following information in your scope for use inside the loop by a
 
 You can assign them to variables using the following syntax
 ```
-{{ LOOP(loopIndex, collectionIndex) yourCollection[1, ..] as currentItem }}
+{{ LOOP(currentLoopIndex, collectionIndex) yourCollection[1, ..] as currentItem }}
     YOUR CONTENT
 {{ END }}
 ```
-Note that ```collectionIndex``` can be omitted by just specifying ```LOOP (loopIndex)``` instead of ```LOOP (loopIndex, collectionIndex)```
+Note that ```collectionIndex``` can be omitted by just specifying ```LOOP (currentLoopIndex)``` instead of ```LOOP (currentLoopIndex, collectionIndex)```
 
 An example of looping on all the items in the csv file:
 ```
@@ -157,13 +158,27 @@ Another way we could have written the example above is a follows:
 ```
 {{ LOOP(parentIndex, parentCollectionIndex) yourCollection}}
     Parent Loop {{ parentIndex }}!
-    {{ LOOP(loopIndex, collectionIndex) yourCollection[parentCollectionIndex] }}
+    {{ LOOP(currentLoopIndex, collectionIndex) yourCollection[parentCollectionIndex] }}
         Item: {{ yourCollection[parentCollectionIndex][collectionIndex] }}
     {{ END }}
 {{ END }}
 ```
 
 Using the ```as yourVariable``` syntax is much more concise and so is recommended, but this example shows a different way you can do things.
+
+# Error Handling
+
+When an error occurs, the line number and some additional info is printed out. For example, if a LOOP specifies an `as yourVariable` statement, but there was a typo such that the `as` is actually an `a`
+```
+{{ LOOP localizations[1, ..] a currentItem }}
+```
+Then the command will output an error that looks something like this
+```
+Failed to write to file templates/localization_template/key_lang_localization.hamster_wheel
+Error at line number 7
+Expected RightMustache, found Variable.
+Current slice reads a.
+```
 
 # And That's That
 Now that you know the syntax and how to use it, you can go ahead and loop over collections to you heart's content.
